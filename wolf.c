@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <pthread.h>
+#include <time.h>
 
 int worldMap[mapWidth][mapHeight]=
 {
@@ -162,9 +163,12 @@ int paint_world(t_view *view)
 }
 
 void	move_keys(t_view *view, int key)
-{
-	double moveSpeed = 2.0; //the constant value is in squares/second
-    double rotSpeed = 0.5; //the constant value is in radians/second
+{	
+    static double	f_time = 1;
+    double moveSpeed = f_time * 5.0; //the constant value is in squares/second
+    double rotSpeed = f_time * 3.0; //the constant value is in radians/second
+	clock_t			t;
+	
     mlx_clear_window (view->mlx_ptr, view->win_ptr);
 	if (key == 125)
 	{
@@ -196,7 +200,11 @@ void	move_keys(t_view *view, int key)
       view->planeX = view->planeX * cos(rotSpeed) - view->planeY * sin(rotSpeed);
       view->planeY = oldPlaneX * sin(rotSpeed) + view->planeY * cos(rotSpeed);
 	}
-	paint_world(view);	
+
+	t = clock();
+	paint_world(view);
+	t = clock() - t;
+	f_time = ((double)t) / CLOCKS_PER_SEC;		
 }
 
 int		key_handler(int key, t_view *view)
