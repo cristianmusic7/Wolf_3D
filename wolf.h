@@ -69,9 +69,16 @@ typedef struct	s_view
 	int			texWidth;
 	int			texHeight;
 
-	t_image     textures[8];
-	//unsigned int	textures[8][4096];
+	t_image     textures[10];
+	double		*z_buffer;
 }				t_view;
+
+typedef struct	s_sprite
+{
+  double x;
+  double y;
+  int texture;
+}				t_sprite;
 
 typedef struct	s_thread
 {

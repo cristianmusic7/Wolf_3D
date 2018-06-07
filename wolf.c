@@ -47,6 +47,72 @@ int worldMap[mapWidth][mapHeight]=
   {4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3}
 };
 
+#define numSprites 19
+
+t_sprite sprite[numSprites] =
+{
+  {20.5, 11.5, 10}, //green light in front of playerstart
+  //green lights in every room
+  {18.5,4.5, 10},
+  {10.0,4.5, 10},
+  {10.0,12.5,10},
+  {3.5, 6.5, 10},
+  {3.5, 20.5,10},
+  {3.5, 14.5,10},
+  {14.5,20.5,10},
+
+  //row of pillars in front of wall: fisheye test
+  {18.5, 10.5, 9},
+  {18.5, 11.5, 9},
+  {18.5, 12.5, 9},
+
+  //some barrels around the map
+  {21.5, 1.5, 8},
+  {15.5, 1.5, 8},
+  {16.0, 1.8, 8},
+  {16.2, 1.2, 8},
+  {3.5,  2.5, 8},
+  {9.5, 15.5, 8},
+  {10.0, 15.1,8},
+  {10.5, 15.8,8},
+};
+
+int spriteOrder[numSprites];
+double spriteDistance[numSprites];
+
+//sort algorithm
+void combSort(int* order, double* dist, int amount)
+{
+  int gap = amount;
+  int swapped = 0;
+  double tmp_dist;
+  double tmp_order;
+  while(gap > 1 || swapped)
+  {
+    //shrink factor 1.3
+    gap = (gap * 10) / 13;
+    if(gap == 9 || gap == 10) gap = 11;
+    if (gap < 1) gap = 1;
+    swapped = 0;
+    for(int i = 0; i < amount - gap; i++)
+    {
+      int j = i + gap;
+      if(dist[i] < dist[j])
+      {
+      	tmp_dist = dist[i];
+      	dist[i] = dist[j];
+      	dist[j] = tmp_dist;
+
+      	tmp_order = order[i];
+      	order[i] = order[j];
+      	order[j] = tmp_order;
+        swapped = 1;
+      }
+    }
+  }
+}
+
+
 int draw_line(int x, int d_start, int d_end, int lineHeight, int texX, int side, int texNum, t_view *view)
 {
 	/*int y = d_start;
@@ -118,9 +184,86 @@ int draw_floor(int x, int drawEnd, double floorXWall, double floorYWall, double 
 	return(0);
 }
 
+int draw_sprites(t_view *view)
+{
+	//SPRITE CASTING
+	    //sort sprites from far to close
+	    for(int i = 0; i < numSprites; i++)
+	    {
+	      spriteOrder[i] = i;
+	      spriteDistance[i] = ((view->posX - sprite[i].x) * (view->posX - sprite[i].x) + (view->posY - sprite[i].y) * (view->posY - sprite[i].y)); //sqrt not taken, unneeded
+	    }
+	    combSort(spriteOrder, spriteDistance, numSprites);
+
+	    //after sorting the sprites, do the projection and draw them
+	    for(int i = 0; i < numSprites; i++)
+	    {
+	      //translate sprite position to relative to camera
+	      double spriteX = sprite[spriteOrder[i]].x - view->posX;
+	      double spriteY = sprite[spriteOrder[i]].y - view->posY;
+
+	      //transform sprite with the inverse camera matrix
+	      // [ planeX   dirX ] -1                                       [ dirY      -dirX ]
+	      // [               ]       =  1/(planeX*dirY-dirX*planeY) *   [                 ]
+	      // [ planeY   dirY ]                                          [ -planeY  planeX ]
+
+	      double invDet = 1.0 / (view->planeX * view->dirY - view->dirX * view->planeY); //required for correct matrix multiplication
+
+	      double transformX = invDet * (view->dirY * spriteX - view->dirX * spriteY);
+	      double transformY = invDet * (-view->planeY * spriteX + view->planeX * spriteY); //this is actually the depth inside the screen, that what Z is in 3D
+
+	      int spriteScreenX = (int)((view->s_width / 2) * (1 + transformX / transformY));
+
+	      //calculate height of the sprite on screen
+	      int spriteHeight = ABS((int)(view->s_height / (transformY))); //using "transformY" instead of the real distance prevents fisheye
+	      //calculate lowest and highest pixel to fill in current stripe
+	      int drawStartY = -spriteHeight / 2 + view->s_height / 2;
+	      if(drawStartY < 0) drawStartY = 0;
+	      int drawEndY = spriteHeight / 2 + view->s_height / 2;
+	      if(drawEndY >= view->s_height) drawEndY = view->s_height - 1;
+
+	      //calculate width of the sprite
+	      int spriteWidth = ABS( (int)(view->s_height / (transformY)));
+	      int drawStartX = -spriteWidth / 2 + spriteScreenX;
+	      if(drawStartX < 0) drawStartX = 0;
+	      int drawEndX = spriteWidth / 2 + spriteScreenX;
+	      if(drawEndX >= view->s_width) drawEndX = view->s_width - 1;
+
+	      //loop through every vertical stripe of the sprite on screen
+	      for(int stripe = drawStartX; stripe < drawEndX; stripe++)
+	      {
+		        int texX = (int)(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) * view->texWidth / spriteWidth) / 256;
+		        //the conditions in the if are:
+		        //1) it's in front of camera plane so you don't see things behind you
+		        //2) it's on the screen (left)
+		        //3) it's on the screen (right)
+		        //4) ZBuffer, with perpendicular distance
+		        if(transformY > 0 && stripe > 0 && stripe < view->s_width && transformY < view->z_buffer[stripe])
+		        for(int y = drawStartY; y < drawEndY; y++) //for every pixel of the current stripe
+		        {
+		          int d = (y) * 256 - view->s_height * 128 + spriteHeight * 128; //256 and 128 factors to avoid floats
+		          int texY = ((d * view->texHeight) / spriteHeight) / 256;
+
+		          unsigned int color = *(unsigned int *)(view->textures[sprite[spriteOrder[i]].texture].addr +
+					view->textures[sprite[spriteOrder[i]].texture].s_line * texY + (texX * (view->textures[sprite[spriteOrder[i]].texture].bpp / 8)));
+
+		          if((color & 0xFFFFFF) != 0)
+		    	  		*(int *)(view->img.addr + (stripe * (view->img.bpp / 8)) +
+		    	  				(y * view->img.s_line)) = color;
+
+
+		          //unsigned long color = view->textures[sprite[spriteOrder[i]].texture][view->texWidth * texY + texX]; //get current color from the texture
+		          //if((color & 0x00FFFFFF) != 0) buffer[y][stripe] = color; //paint pixel if it isn't black, black is the invisible color
+		       }
+	      	}
+	  	}
+	return(0);
+}
+
 int paint_world(t_view *view)
 {
-	int x = 1;	
+	int x = 1;
+	view->z_buffer = (double *)malloc(sizeof(double) * view->s_width);
 
 	while(x <= view->s_width)
 		{
@@ -202,19 +345,6 @@ int paint_world(t_view *view)
 	      int drawEnd = lineHeight / 2 + view->s_width / 2;
 	      if(drawEnd >= view->s_width)drawEnd = view->s_width - 1;
 
-	      /*//choose wall color
-	      switch(worldMap[mapX][mapY])
-	      {
-	        case 1:  color = 0xFF0000;  break; //red
-	        case 2:  color = 0x00FF00;  break; //green
-	        case 3:  color = 0x0000FF;   break; //blue
-	        case 4:  color = 0xFFFFFF;  break; //white
-	        default: color = 0x00FFFF; break; //yellow
-	      }
-
-	      //give x and y sides different brightness
-	      if (side == 1) {color = color / 2;}*/
-
 	      int texNum = worldMap[mapX][mapY] - 1; //1 subtracted from it so that texture 0 can be used!
 
 	      //calculate value of wallX
@@ -255,11 +385,16 @@ int paint_world(t_view *view)
 	        floorXWall = mapX + wallX;
 	        floorYWall = mapY + 1.0;
 	      }
+	      view->z_buffer[x] = perpWallDist; //perpendicular distance is used 
 
-	      draw_floor(x, drawEnd, floorXWall, floorYWall, perpWallDist, view);	      
+	      draw_floor(x, drawEnd, floorXWall, floorYWall, perpWallDist, view);
+
+	       	  
 	      x++;
-	    }
+	    }	 
 
+	draw_sprites(view); 
+	free(view->z_buffer);
 	mlx_put_image_to_window(view->mlx_ptr, view->win_ptr, view->img.ptr, 0, 0);
 
 	return(0);
@@ -357,7 +492,7 @@ void init_images(t_view *view)
 	view->textures[3].addr = mlx_get_data_addr(view->textures[3].ptr, &(view->textures[3].bpp),
 						&(view->textures[3].s_line), &(view->textures[3].endian));
 
-	view->textures[4].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/pillar.xpm", &view->texWidth, &view->texHeight);
+	view->textures[4].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/eagle.xpm", &view->texWidth, &view->texHeight);
 	view->textures[4].addr = mlx_get_data_addr(view->textures[4].ptr, &(view->textures[4].bpp),
 						&(view->textures[4].s_line), &(view->textures[4].endian));
 
@@ -372,6 +507,18 @@ void init_images(t_view *view)
 	view->textures[7].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/purplestone.xpm", &view->texWidth, &view->texHeight);
 	view->textures[7].addr = mlx_get_data_addr(view->textures[7].ptr, &(view->textures[7].bpp),
 						&(view->textures[7].s_line), &(view->textures[7].endian));
+
+	view->textures[8].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/barrel.xpm", &view->texWidth, &view->texHeight);
+	view->textures[8].addr = mlx_get_data_addr(view->textures[8].ptr, &(view->textures[8].bpp),
+						&(view->textures[8].s_line), &(view->textures[8].endian));
+
+	view->textures[9].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/pillar.xpm", &view->texWidth, &view->texHeight);
+	view->textures[9].addr = mlx_get_data_addr(view->textures[9].ptr, &(view->textures[9].bpp),
+						&(view->textures[9].s_line), &(view->textures[9].endian));
+
+	view->textures[10].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/greenlight.xpm", &view->texWidth, &view->texHeight);
+	view->textures[10].addr = mlx_get_data_addr(view->textures[10].ptr, &(view->textures[10].bpp),
+						&(view->textures[10].s_line), &(view->textures[10].endian));
 }
 
 int			main(/*int argc, char **argv*/void)
@@ -380,7 +527,7 @@ int			main(/*int argc, char **argv*/void)
 
 	view.mlx_ptr = mlx_init();
 	view.s_width = 1000;
-	view.s_height = 1000;
+	view.s_height = 1000;	
 
 	view.world_map = (int **)worldMap;
 	init_images(&view);	
