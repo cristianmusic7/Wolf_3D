@@ -21,40 +21,100 @@
 
 int worldMap[mapWidth][mapHeight]=
 {
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,0,0,0,5,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+  {4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7},
+  {4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
+  {4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
+  {4,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
+  {4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7},
+  {4,0,4,0,0,0,0,5,5,5,5,5,5,5,5,5,7,7,0,7,7,7,7,7},
+  {4,0,5,0,0,0,0,5,0,5,0,5,0,5,0,5,7,0,0,0,7,7,7,1},
+  {4,0,6,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
+  {4,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,1},
+  {4,0,8,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8},
+  {4,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,7,7,7,1},
+  {4,0,0,0,0,0,0,5,5,5,5,0,5,5,5,5,7,7,7,7,7,7,7,1},
+  {6,6,6,6,6,6,6,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
+  {8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+  {6,6,6,6,6,6,0,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6},
+  {4,4,4,4,4,4,0,4,4,4,6,0,6,2,2,2,2,2,2,2,3,3,3,3},
+  {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
+  {4,0,0,0,0,0,0,0,0,0,0,0,6,2,0,0,5,0,0,2,0,0,0,2},
+  {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
+  {4,0,6,0,6,0,0,0,0,4,6,0,0,0,0,0,5,0,0,0,0,0,0,2},
+  {4,0,0,5,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2},
+  {4,0,6,0,6,0,0,0,0,4,6,0,6,2,0,0,5,0,0,2,0,0,0,2},
+  {4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2},
+  {4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3}
 };
 
-int draw_line(int x, int d_start, int d_end, int color, t_view *view)
+int draw_line(int x, int d_start, int d_end, int lineHeight, int texX, int side, int texNum, t_view *view)
 {
-	int y = d_start;
+	/*int y = d_start;
 	while (y < d_end)
 	{
 		mlx_pixel_put(view->mlx_ptr, view->win_ptr, x, y, color);
 		y++;
 	}
+	return(0);*/
+	int y = d_start;
+	while (y < d_end)
+	{
+		int d = y * 256 - view->s_height * 128 + lineHeight * 128;  //256 and 128 factors to avoid floats
+        // TODO: avoid the division to speed this up
+        int texY = ((d * view->texHeight) / lineHeight) / 256;
+        unsigned int color = *(unsigned int *)(view->textures[texNum].addr +
+        			view->textures[texNum].s_line * texY + (texX * (view->textures[texNum].bpp / 8)));  
+   
+        //make color darker for y-sides: R, G and B byte each divided through two with a "shift" and an "and"
+        if(side == 1) color = (color >> 1) & 8355711;
+
+        *(int *)(view->img.addr + (x * (view->img.bpp / 8)) + (y * view->img.s_line)) = color;
+        //mlx_pixel_put(view->mlx_ptr, view->win_ptr, x, y, color);
+		y++;
+	}
+	return(0);
+}
+
+int draw_floor(int x, int drawEnd, double floorXWall, double floorYWall, double perpWallDist, t_view *view)
+{
+	double distWall, distPlayer, currentDist;
+
+	  distWall = perpWallDist;
+	  distPlayer = 0.0;
+
+	  if (drawEnd < 0) drawEnd = view->s_height; //becomes < 0 when the integer overflows
+
+	  //draw the floor from drawEnd to the bottom of the screen
+
+	  int y = drawEnd + 1;
+	  while (y < view->s_height)
+	  {
+	    currentDist = view->s_height / (2.0 * y - view->s_height); //you could make a small lookup table for this instead
+
+	    double weight = (currentDist - distPlayer) / (distWall - distPlayer);
+
+	    double currentFloorX = weight * floorXWall + (1.0 - weight) * view->posX;
+	    double currentFloorY = weight * floorYWall + (1.0 - weight) * view->posY;
+
+	    int floorTexX, floorTexY;
+	    floorTexX = (int)(currentFloorX * view->texWidth) % view->texWidth;
+	    floorTexY = (int)(currentFloorY * view->texHeight) % view->texHeight;
+
+	    unsigned int color_floor = (*(unsigned int *)(view->textures[3].addr +
+				view->textures[3].s_line * floorTexY + (floorTexX * (view->textures[3].bpp / 8))) >> 1) & 8355711;
+
+	    *(int *)(view->img.addr + (x * (view->img.bpp / 8)) + (y * view->img.s_line)) = color_floor;
+
+	    //mlx_pixel_put(view->mlx_ptr, view->win_ptr, x, y, color_floor);
+
+	    unsigned int color_ceiling = *(unsigned int *)(view->textures[6].addr +
+				view->textures[6].s_line * floorTexY + (floorTexX * (view->textures[6].bpp / 8)));
+
+	    *(int *)(view->img.addr + (x * (view->img.bpp / 8)) + ((view->s_height - y) * view->img.s_line)) = color_ceiling;
+
+	    y++;
+	    //mlx_pixel_put(view->mlx_ptr, view->win_ptr, x, view->s_height - y, color_ceiling);
+	  }
 	return(0);
 }
 
@@ -76,7 +136,7 @@ int paint_world(t_view *view)
 			double sideDistX;
 			double sideDistY;
 
-			int color = 0;
+			//int color = 0;
 
 			//length of ray from one x or y-side to next x or y-side
 	      double deltaDistX = ABS(1 / rayDirX);
@@ -134,7 +194,7 @@ int paint_world(t_view *view)
 	      else		perpWallDist = (mapY - view->posY + (1 - stepY) / 2) / rayDirY;
 
 	      //Calculate height of line to draw on screen
-	      int lineHeight = (int)(view->s_width / perpWallDist);
+	      int lineHeight = (int)(view->s_height / perpWallDist);
 
 	      //calculate lowest and highest pixel to fill in current stripe
 	      int drawStart = -lineHeight / 2 + view->s_width / 2;
@@ -142,7 +202,7 @@ int paint_world(t_view *view)
 	      int drawEnd = lineHeight / 2 + view->s_width / 2;
 	      if(drawEnd >= view->s_width)drawEnd = view->s_width - 1;
 
-	      //choose wall color
+	      /*//choose wall color
 	      switch(worldMap[mapX][mapY])
 	      {
 	        case 1:  color = 0xFF0000;  break; //red
@@ -153,19 +213,62 @@ int paint_world(t_view *view)
 	      }
 
 	      //give x and y sides different brightness
-	      if (side == 1) {color = color / 2;}
+	      if (side == 1) {color = color / 2;}*/
+
+	      int texNum = worldMap[mapX][mapY] - 1; //1 subtracted from it so that texture 0 can be used!
+
+	      //calculate value of wallX
+	      double wallX; //where exactly the wall was hit
+	      if (side == 0) wallX = view->posY + perpWallDist * rayDirY;
+	      else           wallX = view->posX + perpWallDist * rayDirX;
+	      wallX -= floor((wallX));
+
+	      //x coordinate on the texture
+	      int texX = (int)(wallX * (double)(view->texWidth));
+	      if(side == 0 && rayDirX > 0) texX = view->texWidth - texX - 1;
+	      if(side == 1 && rayDirY < 0) texX = view->texWidth - texX - 1;
 
 	      //draw the pixels of the stripe as a vertical line
-	      draw_line(x, drawStart, drawEnd, color, view);
+	      draw_line(x, drawStart, drawEnd, lineHeight, texX, side, texNum, view);
+
+	      //FLOOR CASTING
+	      double floorXWall, floorYWall; //x, y position of the floor texel at the bottom of the wall
+
+	      //4 different wall directions possible
+	      if(side == 0 && rayDirX > 0)
+	      {
+	        floorXWall = mapX;
+	        floorYWall = mapY + wallX;
+	      }
+	      else if(side == 0 && rayDirX < 0)
+	      {
+	        floorXWall = mapX + 1.0;
+	        floorYWall = mapY + wallX;
+	      }
+	      else if(side == 1 && rayDirY > 0)
+	      {
+	        floorXWall = mapX + wallX;
+	        floorYWall = mapY;
+	      }
+	      else
+	      {
+	        floorXWall = mapX + wallX;
+	        floorYWall = mapY + 1.0;
+	      }
+
+	      draw_floor(x, drawEnd, floorXWall, floorYWall, perpWallDist, view);	      
 	      x++;
 	    }
+
+	mlx_put_image_to_window(view->mlx_ptr, view->win_ptr, view->img.ptr, 0, 0);
+
 	return(0);
 }
 
 void	move_keys(t_view *view, int key)
 {	
     static double	f_time = 1;
-    double moveSpeed = f_time * 5.0; //the constant value is in squares/second
+    double moveSpeed = f_time * 15.0; //the constant value is in squares/second
     double rotSpeed = f_time * 3.0; //the constant value is in radians/second
 	clock_t			t;
 	
@@ -236,9 +339,43 @@ int		key_handler(int key, t_view *view)
 	return (1);
 }
 
+void init_images(t_view *view)
+{
+	view->textures[0].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/bluestone.xpm", &view->texWidth, &view->texHeight);
+	view->textures[0].addr = mlx_get_data_addr(view->textures[0].ptr, &(view->textures[0].bpp),
+						&(view->textures[0].s_line), &(view->textures[0].endian));
+
+	view->textures[1].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/colorstone.xpm", &view->texWidth, &view->texHeight);
+	view->textures[1].addr = mlx_get_data_addr(view->textures[1].ptr, &(view->textures[1].bpp),
+						&(view->textures[1].s_line), &(view->textures[1].endian));
+
+	view->textures[2].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/greystone.xpm", &view->texWidth, &view->texHeight);
+	view->textures[2].addr = mlx_get_data_addr(view->textures[2].ptr, &(view->textures[2].bpp),
+						&(view->textures[2].s_line), &(view->textures[2].endian));
+
+	view->textures[3].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/mossy.xpm", &view->texWidth, &view->texHeight);
+	view->textures[3].addr = mlx_get_data_addr(view->textures[3].ptr, &(view->textures[3].bpp),
+						&(view->textures[3].s_line), &(view->textures[3].endian));
+
+	view->textures[4].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/pillar.xpm", &view->texWidth, &view->texHeight);
+	view->textures[4].addr = mlx_get_data_addr(view->textures[4].ptr, &(view->textures[4].bpp),
+						&(view->textures[4].s_line), &(view->textures[4].endian));
+
+	view->textures[5].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/redbrick.xpm", &view->texWidth, &view->texHeight);
+	view->textures[5].addr = mlx_get_data_addr(view->textures[5].ptr, &(view->textures[5].bpp),
+						&(view->textures[5].s_line), &(view->textures[5].endian));
+
+	view->textures[6].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/wood.xpm", &view->texWidth, &view->texHeight);
+	view->textures[6].addr = mlx_get_data_addr(view->textures[6].ptr, &(view->textures[6].bpp),
+						&(view->textures[6].s_line), &(view->textures[6].endian));
+
+	view->textures[7].ptr = mlx_xpm_file_to_image(view->mlx_ptr, "textures/purplestone.xpm", &view->texWidth, &view->texHeight);
+	view->textures[7].addr = mlx_get_data_addr(view->textures[7].ptr, &(view->textures[7].bpp),
+						&(view->textures[7].s_line), &(view->textures[7].endian));
+}
+
 int			main(/*int argc, char **argv*/void)
 {
-
 	t_view view;
 
 	view.mlx_ptr = mlx_init();
@@ -246,7 +383,7 @@ int			main(/*int argc, char **argv*/void)
 	view.s_height = 1000;
 
 	view.world_map = (int **)worldMap;
-
+	init_images(&view);	
 
 	//x and y start position
   	//initial direction vector
@@ -257,13 +394,17 @@ int			main(/*int argc, char **argv*/void)
 	view.dirY = 0;
 	view.planeX = 0;
 	view.planeY = 0.66;
+	view.texWidth = 64;
+	view.texHeight = 64;
 
-	
 	view.win_ptr = mlx_new_window(view.mlx_ptr, view.s_width, view.s_height, "wolf 3D");
-	//view.img_ptr = mlx_new_image(view.mlx_ptr, view.s_width, view.s_height);
-	/*view.img.addr = mlx_get_data_addr(view.img_ptr, &(view.img.bpp),
-								&(view.img.s_line), &(view.img.endian));*/
 
+	view.img.ptr = mlx_new_image(view.mlx_ptr, view.s_width, view.s_height);
+	view.img.addr = mlx_get_data_addr(view.img.ptr, &(view.img.bpp),
+									&(view.img.s_line), &(view.img.endian));
+	/*void *img_ptr = mlx_xpm_file_to_image(view.mlx_ptr, "textures/pillar.xpm", &view.texWidth, &view.texHeight);
+	mlx_put_image_to_window(view.mlx_ptr, view.win_ptr, img_ptr, 300, 300);
+	mlx_put_image_to_window(view.mlx_ptr, view.win_ptr, img_ptr, 364, 300);*/
 	/*if ((argc < 2 || argc > 4) || !get_type(argv[1]) || (argc == 3 &&
 			!get_type(argv[2])) || (argc == 4 && !get_type(argv[3])))
 		ft_putendl("usage: fractal1 [fractal2] [fractal3]\nfractals: \
@@ -271,11 +412,12 @@ int			main(/*int argc, char **argv*/void)
 							\n- julia3\n- mandelbrot3\n- mandelbar3");
 	else
 	{*/
-		paint_world(&view);		
-		mlx_hook(view.win_ptr, 2, 0, key_handler, &view);
-		/*mlx_hook(view.win_ptr, 4, 0, mouse_handler, &view);
-		mlx_hook(view.win_ptr, 6, 0, motion_handler, &view);*/
-		mlx_loop(view.mlx_ptr);
+
+	paint_world(&view);		
+	mlx_hook(view.win_ptr, 2, 0, key_handler, &view);
+	/*mlx_hook(view.win_ptr, 4, 0, mouse_handler, &view);
+	mlx_hook(view.win_ptr, 6, 0, motion_handler, &view);*/
+	mlx_loop(view.mlx_ptr);
 	//}
 	return (0);
 }

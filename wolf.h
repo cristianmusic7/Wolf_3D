@@ -23,6 +23,7 @@
 
 typedef struct	s_image
 {
+	void		*ptr;
 	char		*addr;
 	int			bpp;
 	int			s_line;
@@ -65,6 +66,11 @@ typedef struct	s_view
 	double		planeX;
 	double		planeY;
 	int			**world_map;
+	int			texWidth;
+	int			texHeight;
+
+	t_image     textures[8];
+	//unsigned int	textures[8][4096];
 }				t_view;
 
 typedef struct	s_thread
