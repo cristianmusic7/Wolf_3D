@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   fractol.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cfranco <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: cfranco <marvin 42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/05/08 17:35:38 by cfranco           #+#    #+#             */
 /*   Updated: 2018/05/08 17:35:40 by cfranco          ###   ########.fr       */
@@ -47,12 +47,6 @@ typedef struct	s_view
 	int			s_height;
 	double		move_x;
 	double		move_y;
-	double		move_xz;
-	double		move_yz;
-	double		zoom_x;
-	double		zoom_y;
-	double		zoom_hx;
-	double		zoom_hy;
 	t_complex	c;
 	int			max;
 	int			sat;
@@ -68,16 +62,19 @@ typedef struct	s_view
 	int			**world_map;
 	int			texWidth;
 	int			texHeight;
-
-	t_image     textures[10];
+	
+	int			fight_tex;
 	double		*z_buffer;
+	int			fight_anim;	
+	t_image     textures[21];
 }				t_view;
 
 typedef struct	s_sprite
 {
-  double x;
-  double y;
-  int texture;
+  double		x;
+  double		y;
+  int		texture;
+  int		moveX;
 }				t_sprite;
 
 typedef struct	s_thread
