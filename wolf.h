@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fractol.h                                          :+:      :+:    :+:   */
+/*   wolf.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cfranco <marvin 42.fr>                     +#+  +:+       +#+        */
+/*   By: cfranco <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/05/08 17:35:38 by cfranco           #+#    #+#             */
-/*   Updated: 2018/05/08 17:35:40 by cfranco          ###   ########.fr       */
+/*   Created: 2018/06/11 23:27:32 by cfranco           #+#    #+#             */
+/*   Updated: 2018/06/11 23:27:34 by cfranco          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,10 @@
 # define WOLF_H
 
 # define ABS(x) (((x)<0)?-(x):(x))
+# define MAX(x, y) x > y ? x : y
 # define NUM_THREADS 8
 
 # include <libft.h>
-
-#define mapWidth 24
-#define mapHeight 24
 
 typedef struct	s_image
 {
@@ -30,11 +28,28 @@ typedef struct	s_image
 	int			endian;
 }				t_image;
 
+typedef struct	s_map
+{
+	int			**values;
+	int			width;
+	int			height;
+	int			max_z;	
+}				t_map;
+
 typedef struct	s_complex
 {
 	double		re;
 	double		im;
 }				t_complex;
+
+typedef struct	s_sprite
+{
+  double		x;
+  double		y;
+  int			texture;
+  double		distance;
+  int 			index;
+}				t_sprite;
 
 typedef struct	s_view
 {
@@ -47,7 +62,7 @@ typedef struct	s_view
 	int			s_height;
 	double		move_x;
 	double		move_y;
-	t_complex	c;
+	t_map		map;
 	int			max;
 	int			sat;
 	int			bri;
@@ -59,23 +74,17 @@ typedef struct	s_view
 	double		dirY;
 	double		planeX;
 	double		planeY;
-	int			**world_map;
+	//t_image			**world_map;
 	int			texWidth;
 	int			texHeight;
 	
+	int			num_sprites;
+	t_sprite    *sprites;
 	int			fight_tex;
 	double		*z_buffer;
 	int			fight_anim;	
 	t_image     textures[21];
 }				t_view;
-
-typedef struct	s_sprite
-{
-  double		x;
-  double		y;
-  int		texture;
-  int		moveX;
-}				t_sprite;
 
 typedef struct	s_thread
 {
@@ -84,20 +93,21 @@ typedef struct	s_thread
 	int			cur;
 }				t_thread;
 
-int				get_type(char *type);
-int				hsv_to_rgb(int h, int s, int v);
-void			print_error();
 
-int				pixel_calc(t_view *view, t_complex pos, t_complex offset);
-int				color_calc(t_view *view, int x, int y);
-void			*draw_fractal(void *args);
-pthread_t		*create_thread(int c, int total, t_view *view);
-void			threading(t_view *view);
-void			create_view(void *mlx_ptr, char *type);
+int				paint_world(t_view *view);
+void			print_error();
+void			combSort(int* order, double* dist, int amount);
 
 void			move_keys(t_view *view, int key);
 int				key_handler(int key, t_view *view);
 int				mouse_handler(int button, int x, int y, t_view *view);
 int				motion_handler(int x, int y, t_view *view);
+int				loop_handler(t_view *view);
+int				exit_handler(t_view *view);
+
+void			read_line(t_map *map, char *line, int c);
+void			read_input(char *file, t_map *map);
+void			print_error();
+void			create_point(char *input, t_map *map);
 
 #endif

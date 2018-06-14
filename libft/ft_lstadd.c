@@ -15,6 +15,7 @@
 void	ft_lstadd(t_list **alst, t_list *new)
 {
 	t_list *temp;
+	temp = NULL;
 
 	if (alst)
 	{

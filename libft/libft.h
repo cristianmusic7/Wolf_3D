@@ -107,6 +107,8 @@ int					ft_lstlen(t_list *lst);
 t_list				*ft_lstfind(t_list *lst, void *data_ref, int (*cmp)());
 t_list				*ft_lstsort(t_list *lst, int (*cmp)());
 
+void				ft_merge_sort_f(double *nums, int len);
+
 int					get_next_line(const int fd, char **line);
 
 #endif

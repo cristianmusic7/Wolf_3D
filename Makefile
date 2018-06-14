@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: cfranco <marvin@42.fr>                     +#+  +:+       +#+         #
+#    By: cfranco <marvin 42.fr>                     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/03/21 15:28:39 by cfranco           #+#    #+#              #
-#    Updated: 2018/04/11 15:22:43 by cfranco          ###   ########.fr        #
+#    Updated: 2018/06/11 16:44:52 by cfranco          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,9 +21,11 @@ LIBS = -L minilibx_macos \
 FRAMEWORKS = -framework OpenGL \
 			 -framework AppKit
 
-FLAGS = -Wall -Werror -Wextra
+FLAGS = -Wall -Werror -Wextra -g
 
-SRC = 	wolf.c
+SRC = 	utils.c \
+		hooks.c \
+		wolf.c
 
 OBJS = ft_*.o
 

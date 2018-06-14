@@ -82,7 +82,8 @@ LIBC = ft_memset.c \
 		ft_lstiter.c \
 		ft_lstmap.c \
 		ft_lstpushback.c \
-		get_next_line.c
+		get_next_line.c \
+		ft_merge_sort_f.c
 
 OBJS = ft_*.o \
 	 	get_next_line.o
