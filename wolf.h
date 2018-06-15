@@ -63,13 +63,15 @@ typedef struct	s_view
 	double		move_x;
 	double		move_y;
 	t_map		map;
-	int			max;
-	int			sat;
-	int			bri;
-	int			f_type;
+	int			drawStartX;
+	int			drawStartY;
+	int			drawEndX;
+	int			drawEndY;
 
 	double		posX;
 	double		posY;
+	int			mapX;
+	int			mapY;
 	double		dirX;
 	double		dirY;
 	double		planeX;

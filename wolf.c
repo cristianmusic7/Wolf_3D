@@ -22,6 +22,9 @@ int draw_line(int x, int texX, int side, t_view *view)
 {
 	int y_start;
 	int y_end;
+	int d;
+	int texY;
+	unsigned int color;
 
     if((y_start = -(int)(view->s_height / view->z_buffer[x]) / 2 + view->s_height / 2) < 0)
     	y_start = 0;
@@ -29,13 +32,12 @@ int draw_line(int x, int texX, int side, t_view *view)
     	y_end = view->s_height - 1;
 	while (y_start < y_end)
 	{
-		int d = y_start * 256 - view->s_height * 128 + (int)(view->s_height / view->z_buffer[x]) * 128;
-        int texY = ((d * view->texHeight) / (int)(view->s_height / view->z_buffer[x])) / 256;
-        unsigned int color = *(unsigned int *)(view->textures[side].addr +
-        			view->textures[side].s_line * texY + (texX * (view->textures[side].bpp / 8)));  
-   
-        if(side == 2 || side == 3) color = (color >> 1) & 8355711;
-
+		d = y_start * 256 - view->s_height * 128 + (int)(view->s_height / view->z_buffer[x]) * 128;
+        texY = ((d * view->texHeight) / (int)(view->s_height / view->z_buffer[x])) / 256;
+        color = *(unsigned int *)(view->textures[side].addr +
+        			view->textures[side].s_line * texY + (texX * (view->textures[side].bpp / 8)));
+        if(side == 2 || side == 3)
+        	color = (color >> 1) & 8355711;
         *(int *)(view->img.addr + (x * (view->img.bpp / 8)) + (y_start * view->img.s_line)) = color;
 		y_start++;
 	}
@@ -47,6 +49,8 @@ int draw_floor(int x, double floorXWall, double floorYWall, t_view *view)
 	double	weight;
 	int		floorTexX;
 	int		floorTexY;
+	double currentFloorX;
+	double currentFloorY;
 	int y;
 
 	if((y = (int)(view->s_height / view->z_buffer[x]) / 2 + view->s_height / 2) >= view->s_height)
@@ -56,18 +60,16 @@ int draw_floor(int x, double floorXWall, double floorYWall, t_view *view)
 	while (y < view->s_height)
 	{
 		weight = (view->s_height / (2.0 * y - view->s_height))/view->z_buffer[x];
-
-		double currentFloorX = weight * floorXWall + (1.0 - weight) * view->posX;
-		double currentFloorY = weight * floorYWall + (1.0 - weight) * view->posY;
+		currentFloorX = weight * floorXWall + (1.0 - weight) * view->posX;
+		currentFloorY = weight * floorYWall + (1.0 - weight) * view->posY;
 		floorTexX = (int)(currentFloorX * view->texWidth) % view->texWidth;
 		floorTexY = (int)(currentFloorY * view->texHeight) % view->texHeight;
-
-		unsigned int color_floor = (*(unsigned int *)(view->textures[3].addr +
-				view->textures[3].s_line * floorTexY + (floorTexX * (view->textures[3].bpp / 8))) >> 1) & 8355711;
-		*(int *)(view->img.addr + (x * (view->img.bpp / 8)) + (y * view->img.s_line)) = color_floor;
-		unsigned int color_ceiling = *(unsigned int *)(view->textures[6].addr +
-				view->textures[6].s_line * floorTexY + (floorTexX * (view->textures[6].bpp / 8)));
-		*(int *)(view->img.addr + (x * (view->img.bpp / 8)) + ((view->s_height - y) * view->img.s_line)) = color_ceiling;
+		*(int *)(view->img.addr + (x * (view->img.bpp / 8)) + (y * view->img.s_line)) = 
+			(*(unsigned int *)(view->textures[3].addr + view->textures[3].s_line * floorTexY
+				+ (floorTexX * (view->textures[3].bpp / 8))) >> 1) & 8355711;		
+		*(int *)(view->img.addr + (x * (view->img.bpp / 8)) + ((view->s_height - y) * view->img.s_line)) =
+					*(unsigned int *)(view->textures[6].addr + view->textures[6].s_line * floorTexY
+						+ (floorTexX * (view->textures[6].bpp / 8)));
 		y++;
 	}
 	return(0);
@@ -85,32 +87,30 @@ void draw_sprites2(t_view *view, int spriteScreenX, t_list *s_list, double trans
 {
 	int spriteHeight = ABS((int)(view->s_height / (transformY))); 
 	int spriteWidth = ABS( (int)(view->s_width / (transformY)));
-	int drawStartY;
-	int drawEndY;
 	int stripe;
-	int drawEndX;
 	int y;
 
-	if((drawStartY = -spriteHeight / 2 + view->s_height / 2) < 0) 
-		drawStartY = 0;	
-	if((drawEndY = spriteHeight / 2 + view->s_height / 2) >= view->s_height)
-	  	drawEndY = view->s_height - 1;
+	if((view->drawStartY = -spriteHeight / 2 + view->s_height / 2) < 0) 
+		view->drawStartY = 0;	
+	if((view->drawEndY = spriteHeight / 2 + view->s_height / 2) >= view->s_height)
+	  	view->drawEndY = view->s_height - 1;
 	if((stripe = -spriteWidth / 2 + spriteScreenX) < 0)
 		stripe = 0;
-	if((drawEndX = spriteWidth / 2 + spriteScreenX) >= view->s_width)
-		drawEndX = view->s_width - 1;
-	while (stripe < drawEndX)
+	if((view->drawEndX = spriteWidth / 2 + spriteScreenX) >= view->s_width)
+		view->drawEndX = view->s_width - 1;
+	while (stripe < view->drawEndX)
     {
         int texX = (int)(256 * (stripe++ - (-spriteWidth / 2 + spriteScreenX)) * view->texWidth / spriteWidth) / 256;
         if((stripe-1) > 0 && (stripe-1) < view->s_width && transformY < view->z_buffer[(stripe-1)])
         {
-        	y = drawStartY;
-        	while(y < drawEndY)
+        	y = view->drawStartY;
+        	while(y < view->drawEndY)
 	        {
 	          int d = (y++) * 256 - view->s_height * 128 + spriteHeight * 128; //256 and 128 factors to avoid floats
 	          int texY = ((d * view->texHeight) / spriteHeight) / 256;
 	          unsigned int color = *(unsigned int *)(view->textures[view->sprites[((t_sprite *)s_list->content)->index].texture].addr +
-				view->textures[view->sprites[((t_sprite *)s_list->content)->index].texture].s_line * texY + (texX * (view->textures[view->sprites[((t_sprite *)s_list->content)->index].texture].bpp / 8)));
+						view->textures[view->sprites[((t_sprite *)s_list->content)->index].texture].s_line * texY +
+							(texX * (view->textures[view->sprites[((t_sprite *)s_list->content)->index].texture].bpp / 8)));
 	          if((color & 0xFFFFFF) != 0)
 	    	  		*(int *)(view->img.addr + ((stripe - 1) * (view->img.bpp / 8)) +
 	    	  				((y - 1) * view->img.s_line)) = color;
@@ -122,11 +122,12 @@ void draw_sprites2(t_view *view, int spriteScreenX, t_list *s_list, double trans
 int draw_sprites(t_view *view)
 {
 	t_list *s_list;
+	double spriteX;
+	double spriteY;
 	int c;
 
 	s_list = NULL;
 	c = 0;
-
 	while(c < view->num_sprites)
 	{
 		view->sprites[c].distance = ((view->posX - view->sprites[c].x) * (view->posX - view->sprites[c].x)
@@ -136,8 +137,8 @@ int draw_sprites(t_view *view)
 	s_list = ft_lstsort(s_list, compare);
 	while (s_list != NULL)
 	{
-		double spriteX = view->sprites[((t_sprite *)s_list->content)->index].x - view->posX;
-		double spriteY = view->sprites[((t_sprite *)s_list->content)->index].y - view->posY;
+		spriteX = view->sprites[((t_sprite *)s_list->content)->index].x - view->posX;
+		spriteY = view->sprites[((t_sprite *)s_list->content)->index].y - view->posY;
 		
 		double invDet = 1.0 / (view->planeX * view->dirY - view->dirX * view->planeY); //required for correct matrix multiplication
 		double transformX = invDet * (view->dirY * spriteX - view->dirX * spriteY);
@@ -156,28 +157,25 @@ int draw_sprites(t_view *view)
 
 int draw_fight(t_view *view)
 {
-	int drawStartY;
-	int drawEndY;
 	int stripe;
-	int drawEndX;
 	int spriteScreenX = (int)(view->s_width / 2);
 	int spriteWidth = (int)(view->s_width * 0.75);
 	int spriteHeight = (int)(view->s_height / 2);
 	int y;
 
-	if((drawStartY = view->s_height - spriteHeight) < 0)
-		drawStartY = 0;
-	if((drawEndY = view->s_height) >= view->s_height)
-		drawEndY = view->s_height - 1;
+	if((view->drawStartY = view->s_height - spriteHeight) < 0)
+		view->drawStartY = 0;
+	if((view->drawEndY = view->s_height) >= view->s_height)
+		view->drawEndY = view->s_height - 1;
 	if((stripe = -spriteWidth / 2 + spriteScreenX) < 0)
 		stripe = 0;
-	if((drawEndX = spriteWidth / 2 + spriteScreenX) >= view->s_width)
-		drawEndX = view->s_width - 1;
-	while(stripe < drawEndX)
+	if((view->drawEndX = spriteWidth / 2 + spriteScreenX) >= view->s_width)
+		view->drawEndX = view->s_width - 1;
+	while(stripe < view->drawEndX)
    	{
 		int texX = (int)(256 * (stripe++ - (-spriteWidth / 2 + spriteScreenX)) * 250 / spriteWidth) / 256;
-		y = drawStartY;
-		while(y < drawEndY)
+		y = view->drawStartY;
+		while(y < view->drawEndY)
 	    {
 	      	int texY = (int)(256 * (y++ - (view->s_height - spriteHeight)) * 150 / spriteHeight) / 256;
 	        unsigned int color = *(unsigned int *)(view->textures[view->fight_tex].addr +
@@ -191,77 +189,76 @@ int draw_fight(t_view *view)
 	return(0);
 }
 
+int dda(int x, double rayDirX, double rayDirY, t_view *view)
+{
+	double sideDistX;
+	double sideDistY;
+    int stepX;
+    int stepY;
+    int side;
+
+    stepX = -1 + 2 * !(rayDirX < 0);
+    stepY = -1 + 2 * !(rayDirY < 0);
+    if (rayDirX < 0)
+		sideDistX = (view->posX - view->mapX) * ABS(1 / rayDirX);
+    else
+		sideDistX = (view->mapX + 1.0 - view->posX) * ABS(1 / rayDirX);
+    if (rayDirY < 0)
+		sideDistY = (view->posY - view->mapY) * ABS(1 / rayDirY);
+    else
+		sideDistY = (view->mapY + 1.0 - view->posY) * ABS(1 / rayDirY);
+    while (!view->map.values[view->mapX][view->mapY])
+    {
+		if (sideDistX < sideDistY)
+		{
+			sideDistX += ABS(1 / rayDirX);
+			view->mapX += stepX;
+			side = !(rayDirX > 0);
+      	}
+      	else
+      	{
+			sideDistY += ABS(1 / rayDirY);
+			view->mapY += stepY;
+			side = !(rayDirY > 0) + 2;
+      	}
+    }
+    if (side == 0 || side == 1) 
+    	view->z_buffer[x] = (view->mapX - view->posX + (1 - stepX) / 2) / rayDirX;
+    else
+    	view->z_buffer[x] = (view->mapY - view->posY + (1 - stepY) / 2) / rayDirY;
+    return (side);
+}
+
 int paint_world(t_view *view)
 {
 	int x;
+	int side;
+	double wallX;
+	double rayDirX;
+	double rayDirY;
+	int texX;
 
 	x = 1;	
 
 	while(x <= view->s_width)
 	{
-		double rayDirX = view->dirX + view->planeX * (2 * x / (double)view->s_width - 1);
-		double rayDirY = view->dirY + view->planeY * (2 * x / (double)view->s_width - 1);
-		//which box of the map we're in
-		int mapX = (int)view->posX;
-		int mapY = (int)view->posY;
-
-		//length of ray from current position to next x or y-side
-		double sideDistX;
-		double sideDistY;
-
-	    //what direction to step in x or y-direction (either +1 or -1)
-	    int stepX;
-	    int stepY;
-
-	    int side; //was a NS or a EW wall hit?
-
-	    stepX = -1 + 2 * !(rayDirX < 0);
-	    stepY = -1 + 2 * !(rayDirY < 0);
-	    if (rayDirX < 0)
-			sideDistX = (view->posX - mapX) * ABS(1 / rayDirX);
-	    else
-			sideDistX = (mapX + 1.0 - view->posX) * ABS(1 / rayDirX);
-	    if (rayDirY < 0)
-			sideDistY = (view->posY - mapY) * ABS(1 / rayDirY);
-	    else
-			sideDistY = (mapY + 1.0 - view->posY) * ABS(1 / rayDirY);
-	    //perform DDA
-	    while (!view->map.values[mapX][mapY])
-	    {
-			if (sideDistX < sideDistY)
-			{
-				sideDistX += ABS(1 / rayDirX);
-				mapX += stepX;
-				side = !(rayDirX > 0);
-	      	}
-	      	else
-	      	{
-				sideDistY += ABS(1 / rayDirY);
-				mapY += stepY;
-				side = !(rayDirY > 0) + 2;
-	      	}
-	    }
-	    //Calculate distance projected on camera direction (Euclidean distance will give fisheye effect!)
-	    if (side == 0 || side == 1) 
-	    	view->z_buffer[x] = (mapX - view->posX + (1 - stepX) / 2) / rayDirX;
-	    else
-	    	view->z_buffer[x] = (mapY - view->posY + (1 - stepY) / 2) / rayDirY;
-	    double wallX; //where exactly the wall was hit
+		rayDirX = view->dirX + view->planeX * (2 * x / (double)view->s_width - 1);
+		rayDirY = view->dirY + view->planeY * (2 * x / (double)view->s_width - 1);
+		view->mapX = (int)view->posX;
+		view->mapY = (int)view->posY;
+		side = dda(x, rayDirX, rayDirY, view);
 	    if (side == 0 || side == 1)
 	    	wallX = view->posY + view->z_buffer[x] * rayDirY;
 	    else
 	    	wallX = view->posX + view->z_buffer[x] * rayDirX;
 	    wallX -= floor((wallX));
-
-	    int texX = (int)(wallX * (double)(view->texWidth));
-	    if(side == 0 && rayDirX > 0)
-	    	texX = view->texWidth - texX - 1;
-	    if(side == 3 && rayDirY < 0)
+	    texX = (int)(wallX * (double)(view->texWidth));
+	    if((side == 0 && rayDirX > 0) || (side == 3 && rayDirY < 0))
 	    	texX = view->texWidth - texX - 1;
 	    draw_line(x, texX, side, view);
 	    double floorXWall, floorYWall;
-	    floorXWall = mapX + wallX*!(side == 0 || side == 1) + (rayDirX < 0)*(side == 0 || side == 1);
-	    floorYWall = mapY + (rayDirY < 0)*!(side == 0 || side == 1) + wallX*(side == 0 || side == 1);
+	    floorXWall = view->mapX + wallX*!(side == 0 || side == 1) + (rayDirX < 0)*(side == 0 || side == 1);
+	    floorYWall = view->mapY + (rayDirY < 0)*!(side == 0 || side == 1) + wallX*(side == 0 || side == 1);
 	    draw_floor(x, floorXWall, floorYWall, view);	       	  
 	    x++;
     }
@@ -281,13 +278,17 @@ void	move_keys(t_view *view, int key)
     mlx_clear_window (view->mlx_ptr, view->win_ptr);
 	if (key == 125)
 	{
-		if(view->map.values[(int)(view->posX - view->dirX * moveSpeed)][(int)(view->posY)] == 0) view->posX -= view->dirX * moveSpeed;
-        if(view->map.values[(int)(view->posX)][(int)(view->posY - view->dirY * moveSpeed)] == 0) view->posY -= view->dirY * moveSpeed;
+		if(view->map.values[(int)(view->posX - view->dirX * moveSpeed)][(int)(view->posY)] == 0)
+			view->posX -= view->dirX * moveSpeed;
+        if(view->map.values[(int)(view->posX)][(int)(view->posY - view->dirY * moveSpeed)] == 0)
+        	view->posY -= view->dirY * moveSpeed;
 	}
 	if (key == 126)
 	{
-		if(view->map.values[(int)(view->posX + view->dirX * moveSpeed)][(int)(view->posY)] == 0) view->posX += view->dirX * moveSpeed;
-      	if(view->map.values[(int)(view->posX)][(int)(view->posY + view->dirY * moveSpeed)] == 0) view->posY += view->dirY * moveSpeed;
+		if(view->map.values[(int)(view->posX + view->dirX * moveSpeed)][(int)(view->posY)] == 0)
+			view->posX += view->dirX * moveSpeed;
+      	if(view->map.values[(int)(view->posX)][(int)(view->posY + view->dirY * moveSpeed)] == 0)
+      		view->posY += view->dirY * moveSpeed;
     }		
 	if (key == 124)
 	{		
