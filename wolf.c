@@ -62,7 +62,7 @@ int dda(int x, double rayDirX, double rayDirY, t_view *view)
     return (side);
 }
 
-int paint_world(t_view *view)
+int paint_world(t_view *v)
 {
 	int x;
 	int side;
@@ -72,31 +72,31 @@ int paint_world(t_view *view)
 	int texX;
 
 	x = 1;
-	while(x <= view->s_width)
+	while(x <= v->s_width)
 	{
-		rayDirX = view->dirX + view->planeX * (2 * x / (double)view->s_width - 1);
-		rayDirY = view->dirY + view->planeY * (2 * x / (double)view->s_width - 1);
-		view->mapX = (int)view->posX;
-		view->mapY = (int)view->posY;
-		side = dda(x, rayDirX, rayDirY, view);
+		rayDirX = v->dirX + v->planeX * (2 * x / (double)v->s_width - 1);
+		rayDirY = v->dirY + v->planeY * (2 * x / (double)v->s_width - 1);
+		v->mapX = (int)v->posX;
+		v->mapY = (int)v->posY;
+		side = dda(x, rayDirX, rayDirY, v);
 	    if (side == 0 || side == 1)
-	    	wallX = view->posY + view->z_buffer[x] * rayDirY;
+	    	wallX = v->posY + v->z_buffer[x] * rayDirY;
 	    else
-	    	wallX = view->posX + view->z_buffer[x] * rayDirX;
+	    	wallX = v->posX + v->z_buffer[x] * rayDirX;
 	    wallX -= floor((wallX));
-	    texX = (int)(wallX * (double)(view->texWidth));
+	    texX = (int)(wallX * (double)(v->texWidth));
 	    if((side == 0 && rayDirX > 0) || (side == 3 && rayDirY < 0))
-	    	texX = view->texWidth - texX - 1;
-	    draw_line(x, texX, side, view);
+	    	texX = v->texWidth - texX - 1;
+	    draw_line(x, texX, side, v);
 	    double floorXWall, floorYWall;
-	    floorXWall = view->mapX + wallX*!(side == 0 || side == 1) + (rayDirX < 0)*(side == 0 || side == 1);
-	    floorYWall = view->mapY + (rayDirY < 0)*!(side == 0 || side == 1) + wallX*(side == 0 || side == 1);
-	    draw_floor(x, floorXWall, floorYWall, view);	       	  
+	    floorXWall = v->mapX + wallX*!(side == 0 || side == 1) + (rayDirX < 0)*(side == 0 || side == 1);
+	    floorYWall = v->mapY + (rayDirY < 0)*!(side == 0 || side == 1) + wallX*(side == 0 || side == 1);
+	    draw_floor(x, floorXWall, floorYWall, v);	       	  
 	    x++;
     }
-	draw_sprites(view);
-	draw_fight(view);
-	mlx_put_image_to_window(view->mlx_ptr, view->win_ptr, view->img.ptr, 0, 0);
+	draw_sprites(v, 1.0 / (v->planeX * v->dirY - v->dirX * v->planeY));
+	draw_fight(v, (int)(v->s_width / 2), (int)(v->s_width * 0.75), (int)(v->s_height / 2));
+	mlx_put_image_to_window(v->mlx_ptr, v->win_ptr, v->img.ptr, 0, 0);
 	return(0);
 }
 

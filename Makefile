@@ -23,7 +23,8 @@ FRAMEWORKS = -framework OpenGL \
 
 FLAGS = -Wall -Werror -Wextra -g
 
-SRC = 	draw.c \
+SRC = 	animations.c \
+		draw.c \
 		utils.c \
 		hooks.c \
 		wolf.c

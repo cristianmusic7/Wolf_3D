@@ -26,7 +26,6 @@ void	read_line(t_map *map, char *line, int c)
 	char	**input;
 	char	**in_tmp;
 	int		x;
-	int w_count = 0;
 
 	x = 0;
 	input = ft_strsplit(line, ' ');
@@ -37,17 +36,17 @@ void	read_line(t_map *map, char *line, int c)
 		print_error();
 	else
 		map->width = x;
-
 	map->values[c] = (int *)malloc(sizeof(int) * x);
+	x = 0;
 	while (*input)
 	{
-		map->values[c][w_count] = ft_atoi(*input);
+		map->values[c][x] = ft_atoi(*input);
 		free(*input);
 		input++;
-		w_count++;
+		x++;
 	}
 	free(*input);
-	free(in_tmp);	
+	free(in_tmp);
 	free(line);
 }
 
@@ -56,8 +55,9 @@ void	read_input(char *file, t_map *map)
 	int		fd;
 	char	*line;
 	int		res;
-	int 	l_count = 0;
+	int		l_count;
 
+	l_count = 0;
 	map->height = 0;
 	map->width = 0;
 	if ((fd = open(file, O_RDONLY)) == -1)
@@ -79,39 +79,7 @@ void	read_input(char *file, t_map *map)
 		print_error();
 }
 
-//sort algorithm
-void combSort(int* order, double* dist, int amount)
-{
-  int gap = amount;
-  int swapped = 0;
-  double tmp_dist;
-  double tmp_order;
-  while(gap > 1 || swapped)
-  {
-    //shrink factor 1.3
-    gap = (gap * 10) / 13;
-    if(gap == 9 || gap == 10) gap = 11;
-    if (gap < 1) gap = 1;
-    swapped = 0;
-    for(int i = 0; i < amount - gap; i++)
-    {
-      int j = i + gap;
-      if(dist[i] < dist[j])
-      {
-      	tmp_dist = dist[i];
-      	dist[i] = dist[j];
-      	dist[j] = tmp_dist;
-
-      	tmp_order = order[i];
-      	order[i] = order[j];
-      	order[j] = tmp_order;
-        swapped = 1;
-      }
-    }
-  }
-}
-
-int compare(void *content, void *next_content)
+int		compare(void *content, void *next_content)
 {
 	if (((t_sprite *)content)->distance < ((t_sprite *)next_content)->distance)
 		return (0);
