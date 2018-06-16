@@ -107,6 +107,14 @@ int				motion_handler(int x, int y, t_view *view);
 int				loop_handler(t_view *view);
 int				exit_handler(t_view *view);
 
+int				draw_line(int x, int texX, int side, t_view *view);
+int				draw_floor(int x, double floorXWall, double floorYWall, t_view *view);
+void			draw_sprites2(t_view *view, int spriteScreenX, t_list *s_list, double transformY);
+int				draw_sprites(t_view *view);
+int				draw_fight(t_view *view);
+int				fill_image(int index, int x, int y, int texX, int texY, int dark, t_view *view);
+int				compare(void *content, void *next_content);
+
 void			read_line(t_map *map, char *line, int c);
 void			read_input(char *file, t_map *map);
 void			print_error();

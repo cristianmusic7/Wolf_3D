@@ -110,3 +110,11 @@ void combSort(int* order, double* dist, int amount)
     }
   }
 }
+
+int compare(void *content, void *next_content)
+{
+	if (((t_sprite *)content)->distance < ((t_sprite *)next_content)->distance)
+		return (0);
+	else
+		return (1);
+}
