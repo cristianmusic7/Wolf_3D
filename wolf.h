@@ -48,6 +48,7 @@ typedef struct	s_sprite
   double		y;
   int			texture;
   double		distance;
+  int			alive;
   int 			index;
 }				t_sprite;
 
@@ -57,11 +58,8 @@ typedef struct	s_view
 	void		*win_ptr;
 	void		*img_ptr;
 	t_image		img;
-	double		zoom;
 	int			s_width;
 	int			s_height;
-	double		move_x;
-	double		move_y;
 	t_map		map;
 	int			drawStartX;
 	int			drawStartY;
@@ -80,13 +78,15 @@ typedef struct	s_view
 	int			texHeight;
 	int			tex_x;
 	int			tex_y;
+	int			attack;
+	int			health;
 	
 	int			num_sprites;
 	t_sprite    *sprites;
 	int			fight_tex;
 	double		*z_buffer;
 	int			fight_anim;	
-	t_image     textures[21];
+	t_image     *textures;
 }				t_view;
 
 typedef struct	s_thread
@@ -101,18 +101,19 @@ int				paint_world(t_view *view);
 void			print_error();
 void			combSort(int* order, double* dist, int amount);
 
-void			move_keys(t_view *view, int key);
+void			move_keys(t_view *v, int key, double f_time);
 int				key_handler(int key, t_view *view);
 int				mouse_handler(int button, int x, int y, t_view *view);
 int				motion_handler(int x, int y, t_view *view);
 int				loop_handler(t_view *view);
 int				exit_handler(t_view *view);
 
-void			init_images(t_view *view);
+void			init_view(t_view *v);
+void			load_textures(t_view *view);
 int				draw_line(int x, int side, t_view *view);
 int				draw_floor(int x, double floorXWall, double floorYWall, t_view *view);
 void			draw_sprites2(t_view *view, int spriteScreenX, t_list *s_list, double transformY);
-int				draw_sprites(t_view *v, double invDet);
+void			draw_sprites(t_view *v, double invDet);
 int				draw_fight(t_view *v, int sprite_x, int	sprite_w, int sprite_h);
 void			enemy_anim(t_view *view);
 void			fight_anim(t_view *view);

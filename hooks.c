@@ -26,10 +26,18 @@ int		exit_handler(t_view *view)
 
 int		key_handler(int key, t_view *view)
 {
+	static double	f_time = 0;
+	clock_t			t;
+
 	if (key == 53)
 		exit_handler(view);
 	else if (key == 123 || key == 124 || key == 125 || key == 126)
-		move_keys(view, key);
+	{
+		move_keys(view, key, f_time);
+		t = clock();
+		paint_world(view);
+		f_time = ((double)(clock() - t)) / CLOCKS_PER_SEC;
+	}
 	return (0);
 }
 

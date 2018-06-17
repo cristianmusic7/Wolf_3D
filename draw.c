@@ -68,13 +68,34 @@ int		draw_floor(int x, double floor_x, double floor_y, t_view *v)
 	return (0);
 }
 
-void	draw_sprites2(t_view *v, int sprite_x, t_list *s_list, double tr_y)
+void	render_sprites(t_view *v, double tr_y, t_list *s_list)
 {
-	int sprite_h = ABS((int)(v->s_height / (tr_y)));
-	int sprite_w = ABS((int)(v->s_width / (tr_y)));
 	int y;
 	int d;
+	int sprite_h;
 
+	sprite_h = ABS((int)(v->s_height / (tr_y)));
+	if ((v->drawStartX) > 0 < v->s_width && tr_y <
+							v->z_buffer[(v->drawStartX)])
+	{
+		y = v->drawStartY;
+		while (y < v->drawEndY)
+		{
+			d = (y++) * 256 - v->s_height * 128 + sprite_h * 128;
+			v->tex_y = ((d * v->texHeight) / sprite_h) / 256;
+			fill_image(v->sprites[((t_sprite *)s_list->content)->index].texture,
+								v->drawStartX, y - 1, 2, v);
+		}
+	}
+}
+
+void	draw_sprites2(t_view *v, int sprite_x, t_list *s_list, double tr_y)
+{
+	int sprite_h;
+	int sprite_w;
+
+	sprite_h = ABS((int)(v->s_height / (tr_y)));
+	sprite_w = ABS((int)(v->s_width / (tr_y)));
 	if ((v->drawStartY = -sprite_h / 2 + v->s_height / 2) < 0)
 		v->drawStartY = 0;
 	if ((v->drawEndY = sprite_h / 2 + v->s_height / 2) >= v->s_height)
@@ -85,27 +106,18 @@ void	draw_sprites2(t_view *v, int sprite_x, t_list *s_list, double tr_y)
 		v->drawEndX = v->s_width - 1;
 	while (v->drawStartX < v->drawEndX)
 	{
-		v->tex_x = (int)(256 * (v->drawStartX++ -
-							(-sprite_w / 2 + sprite_x))
-								* v->texWidth / sprite_w) / 256;
-		if ((v->drawStartX - 1) > 0 < v->s_width && tr_y < v->z_buffer[(v->drawStartX - 1)])
-		{
-			y = v->drawStartY;
-			while (y < v->drawEndY)
-			{
-				d = (y++) * 256 - v->s_height * 128 + sprite_h * 128;
-				v->tex_y = ((d * v->texHeight) / sprite_h) / 256;
-				fill_image(v->sprites[((t_sprite *)s_list->content)->index].texture, v->drawStartX, y - 1, 2, v);
-			}
-		}
+		v->tex_x = (int)(256 * (v->drawStartX - (-sprite_w / 2 + sprite_x))
+												* v->texWidth / sprite_w) / 256;
+		render_sprites(v, tr_y, s_list);
+		v->drawStartX++;
 	}
 }
 
-int		draw_sprites(t_view *v, double inv_det)
+void	draw_sprites(t_view *v, double inv_det)
 {
 	t_list	*s_list;
-	double	sprite_x;
-	double	sprite_y;
+	double	sx;
+	double	sy;
 	int		c;
 	double	ty;
 	double	tx;
@@ -121,14 +133,13 @@ int		draw_sprites(t_view *v, double inv_det)
 	s_list = ft_lstsort(s_list, compare);
 	while (s_list != NULL)
 	{
-		sprite_x = v->sprites[((t_sprite *)s_list->content)->index].x - v->posX;
-		sprite_y = v->sprites[((t_sprite *)s_list->content)->index].y - v->posY;
-		tx = inv_det * (v->dirY * sprite_x - v->dirX * sprite_y);
-		if ((ty = inv_det * (-v->planeY * sprite_x + v->planeX * sprite_y)) > 0)
+		sx = v->sprites[((t_sprite *)s_list->content)->index].x - v->posX;
+		sy = v->sprites[((t_sprite *)s_list->content)->index].y - v->posY;
+		tx = inv_det * (v->dirY * sx - v->dirX * sy);
+		if ((ty = inv_det * (-v->planeY * sx + v->planeX * sy)) > 0)
 			draw_sprites2(v, (int)((v->s_width / 2) * (1 + tx / ty)), s_list, ty);
 		s_list = s_list->next;
 	}
-	return (0);
 }
 
 int		draw_fight(t_view *v, int sprite_x, int sprite_w, int sprite_h)
