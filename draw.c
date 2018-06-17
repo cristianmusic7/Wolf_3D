@@ -15,7 +15,7 @@
 #include <libft.h>
 #include <stdio.h>
 
-int		draw_line(int x, int tx, int side, t_view *v)
+int		draw_line(int x, int side, t_view *v)
 {
 	int y_start;
 	int y_end;
@@ -34,9 +34,9 @@ int		draw_line(int x, int tx, int side, t_view *v)
 		v->tex_y = ((d * v->texHeight) /
 						(int)(v->s_height / v->z_buffer[x])) / 256;
 		if (side == 2 || side == 3)
-			fill_image(side, x, y_start, tx, v->tex_y, 1, v);
+			fill_image(side, x, y_start, 1, v);
 		else
-			fill_image(side, x, y_start, tx, v->tex_y, 0, v);
+			fill_image(side, x, y_start, 0, v);
 		y_start++;
 	}
 	return (0);
@@ -61,8 +61,8 @@ int		draw_floor(int x, double floor_x, double floor_y, t_view *v)
 		floor_y_tmp = weight * floor_y + (1.0 - weight) * v->posY;
 		v->tex_x = (int)(floor_x_tmp * v->texWidth) % v->texWidth;
 		v->tex_y = (int)(floor_y_tmp * v->texHeight) % v->texHeight;
-		fill_image(4, x, y, v->tex_x, v->tex_y, 1, v);
-		fill_image(6, x, (v->s_height - y), v->tex_x, v->tex_y, 1, v);
+		fill_image(4, x, y, 1, v);
+		fill_image(6, x, (v->s_height - y), 1, v);
 		y++;
 	}
 	return (0);
@@ -95,7 +95,7 @@ void	draw_sprites2(t_view *v, int sprite_x, t_list *s_list, double tr_y)
 			{
 				d = (y++) * 256 - v->s_height * 128 + sprite_h * 128;
 				v->tex_y = ((d * v->texHeight) / sprite_h) / 256;
-				fill_image(v->sprites[((t_sprite *)s_list->content)->index].texture, v->drawStartX, y - 1, v->tex_x, v->tex_y, 2, v);
+				fill_image(v->sprites[((t_sprite *)s_list->content)->index].texture, v->drawStartX, y - 1, 2, v);
 			}
 		}
 	}
@@ -153,7 +153,7 @@ int		draw_fight(t_view *v, int sprite_x, int sprite_w, int sprite_h)
 		{
 			v->tex_y = (int)(256 * (y++ - (v->s_height - sprite_h))
 									* 150 / sprite_h) / 256;
-			fill_image(v->fight_tex, stripe, y - 1, v->tex_x, v->tex_y, 2, v);
+			fill_image(v->fight_tex, stripe, y - 1, 2, v);
 		}
 	}
 	return (0);

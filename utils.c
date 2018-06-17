@@ -15,6 +15,35 @@
 #include <libft.h>
 #include <stdio.h>
 
+void	init_images(t_view *v)
+{
+	static	char* names[] = {"bluestone.xpm", "colorstone.xpm", "purplestone.xpm", 
+	"eagle.xpm", "mossy.xpm", "redbrick.xpm", "wood.xpm", "greystone.xpm", "barrel.xpm",
+	"pillar.xpm", "greenlight.xpm", "devil/devil_0_0.xpm", "devil/devil_0_1.xpm",
+	"devil/devil_0_2.xpm", "devil/devil_0_3.xpm", "fight/fight_0_3.xpm", "fight/fight_0_0.xpm",
+	"fight/fight_0_1.xpm", "fight/fight_0_2.xpm", "fight/fight_1_0.xpm", "fight/fight_1_1.xpm",
+	"fight/fight_1_2.xpm"};
+	int		c;
+	int		c2;
+	//check seg fault when I punch really fast
+	c = 0;
+	c2 = 0;
+	while (names[c] != '\0')
+		c++;
+	while (c2 < c - 1)
+	{
+		if (c2 > 14)
+		{
+			v->texWidth = 250;
+			v->texHeight = 150;
+		}
+		v->textures[c2].ptr = mlx_xpm_file_to_image(v->mlx_ptr, ft_strjoin("textures/", names[c2]), &v->texWidth, &v->texHeight);
+		v->textures[c2].addr = mlx_get_data_addr(v->textures[c2].ptr, &(v->textures[c2].bpp),
+					&(v->textures[c2].s_line), &(v->textures[c2].endian));
+		c2++;
+	}
+}
+
 void	print_error(void)
 {
 	perror("Error");

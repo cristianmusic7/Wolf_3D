@@ -18,21 +18,22 @@
 #include <math.h>
 #include <time.h>
 
-int fill_image(int index, int x, int y, int texX, int texY, int dark, t_view *view)
+int fill_image(int index, int x, int y, int dark, t_view *v)
 {
 	unsigned int color;
 
-	color = *(unsigned int *)(view->textures[index].addr +
-        			view->textures[index].s_line * texY + (texX * (view->textures[index].bpp / 8)));
+	color = *(unsigned int *)(v->textures[index].addr +
+        			v->textures[index].s_line * v->tex_y +
+        				(v->tex_x * (v->textures[index].bpp / 8)));
 	if (dark == 2 && ((color & 0xFFFFFF) == 0))
 		return (0);
 	else if (dark == 1)
 		color = (color >> 1) & 8355711;
-	*(int *)(view->img.addr + (x * (view->img.bpp / 8)) + (y * view->img.s_line)) = color;
+	*(int *)(v->img.addr + (x * (v->img.bpp / 8)) + (y * v->img.s_line)) = color;
 	return (0);
 }
 
-int dda(int x, double rayDirX, double rayDirY, t_view *view)
+int		dda(int x, double rayDirX, double rayDirY, t_view *view)
 {
 	double sideDistX;
 	double sideDistY;
@@ -62,36 +63,44 @@ int dda(int x, double rayDirX, double rayDirY, t_view *view)
     return (side);
 }
 
+void	main_cast(t_view *v, int x, double	rayDirX, double	rayDirY)
+{
+	double	wallX;	
+	double	floorXWall;
+	double	floorYWall;
+	int		side;
+
+	v->mapX = (int)v->posX;
+	v->mapY = (int)v->posY;
+	side = dda(x, rayDirX, rayDirY, v);
+    if (side == 0 || side == 1)
+    	wallX = v->posY + v->z_buffer[x] * rayDirY;
+    else
+    	wallX = v->posX + v->z_buffer[x] * rayDirX;
+    wallX -= floor((wallX));
+    v->tex_x = (int)(wallX * (double)(v->texWidth));
+    if((side == 0 && rayDirX > 0) || (side == 3 && rayDirY < 0))
+    	v->tex_x = v->texWidth - v->tex_x - 1;    
+    floorXWall = v->mapX + wallX * !(side == 0 || side == 1)
+    						+ (rayDirX < 0) * (side == 0 || side == 1);
+    floorYWall = v->mapY + (rayDirY < 0) * !(side == 0 || side == 1)
+    						+ wallX * (side == 0 || side == 1);
+    draw_line(x, side, v);
+    draw_floor(x, floorXWall, floorYWall, v);	       	  
+}
+
 int paint_world(t_view *v)
 {
 	int x;
-	int side;
-	double wallX;
-	double rayDirX;
-	double rayDirY;
-	int texX;
+	double	rayDirX;
+	double	rayDirY;	
 
 	x = 1;
 	while(x <= v->s_width)
 	{
 		rayDirX = v->dirX + v->planeX * (2 * x / (double)v->s_width - 1);
 		rayDirY = v->dirY + v->planeY * (2 * x / (double)v->s_width - 1);
-		v->mapX = (int)v->posX;
-		v->mapY = (int)v->posY;
-		side = dda(x, rayDirX, rayDirY, v);
-	    if (side == 0 || side == 1)
-	    	wallX = v->posY + v->z_buffer[x] * rayDirY;
-	    else
-	    	wallX = v->posX + v->z_buffer[x] * rayDirX;
-	    wallX -= floor((wallX));
-	    texX = (int)(wallX * (double)(v->texWidth));
-	    if((side == 0 && rayDirX > 0) || (side == 3 && rayDirY < 0))
-	    	texX = v->texWidth - texX - 1;
-	    draw_line(x, texX, side, v);
-	    double floorXWall, floorYWall;
-	    floorXWall = v->mapX + wallX*!(side == 0 || side == 1) + (rayDirX < 0)*(side == 0 || side == 1);
-	    floorYWall = v->mapY + (rayDirY < 0)*!(side == 0 || side == 1) + wallX*(side == 0 || side == 1);
-	    draw_floor(x, floorXWall, floorYWall, v);	       	  
+		main_cast(v, x, rayDirX, rayDirY);
 	    x++;
     }
 	draw_sprites(v, 1.0 / (v->planeX * v->dirY - v->dirX * v->planeY));
@@ -100,82 +109,35 @@ int paint_world(t_view *v)
 	return(0);
 }
 
-void	move_keys(t_view *view, int key)
+void	move_keys(t_view *v, int key)
 {	
-    static double	f_time = 0;
-    double			moveSpeed = f_time * 15.0; //the constant value is in squares/second
-    double			rotSpeed = f_time * 5.0; //the constant value is in radians/second
+	static double	f_time = 0;
 	clock_t			t;
-	
-    mlx_clear_window(view->mlx_ptr, view->win_ptr);
-	if (key == 125)
-	{
-		if(view->map.values[(int)(view->posX - view->dirX * moveSpeed)][(int)(view->posY)] == 0)
-			view->posX -= view->dirX * moveSpeed;
-        if(view->map.values[(int)(view->posX)][(int)(view->posY - view->dirY * moveSpeed)] == 0)
-        	view->posY -= view->dirY * moveSpeed;
-	}
-	if (key == 126)
-	{
-		if(view->map.values[(int)(view->posX + view->dirX * moveSpeed)][(int)(view->posY)] == 0)
-			view->posX += view->dirX * moveSpeed;
-      	if(view->map.values[(int)(view->posX)][(int)(view->posY + view->dirY * moveSpeed)] == 0)
-      		view->posY += view->dirY * moveSpeed;
-    }		
-	if (key == 124)
-	{		
-      //both camera direction and camera plane must be rotated
-      double oldDirX = view->dirX;
-      view->dirX = view->dirX * cos(-rotSpeed) - view->dirY * sin(-rotSpeed);
-      view->dirY = oldDirX * sin(-rotSpeed) + view->dirY * cos(-rotSpeed);
-      double oldPlaneX = view->planeX;
-      view->planeX = view->planeX * cos(-rotSpeed) - view->planeY * sin(-rotSpeed);
-      view->planeY = oldPlaneX * sin(-rotSpeed) + view->planeY * cos(-rotSpeed);
-	}
-	if (key == 123)
-	{
-		//both camera direction and camera plane must be rotated
-      double oldDirX = view->dirX;
-      view->dirX = view->dirX * cos(rotSpeed) - view->dirY * sin(rotSpeed);
-      view->dirY = oldDirX * sin(rotSpeed) + view->dirY * cos(rotSpeed);
-      double oldPlaneX = view->planeX;
-      view->planeX = view->planeX * cos(rotSpeed) - view->planeY * sin(rotSpeed);
-      view->planeY = oldPlaneX * sin(rotSpeed) + view->planeY * cos(rotSpeed);
-	}
+	double			tmp;
+	int				sign;
 
+	//mlx_clear_window(v->mlx_ptr, v->win_ptr);
+	if (key == 125 || key == 126)
+	{
+		sign = -1 + 2 * (key == 126);
+		if(v->map.values[(int)(v->posX + (sign) * v->dirX * f_time * 15)][(int)(v->posY)] == 0)
+			v->posX += (sign) * v->dirX * f_time * 15;
+	    if(v->map.values[(int)(v->posX)][(int)(v->posY + (sign) * v->dirY * f_time * 15)] == 0)
+	    	v->posY += (sign) * v->dirY * f_time * 15;
+	}
+	if (key == 124 || key == 123)
+	{
+		sign = -1 + 2 * (key == 123);
+		tmp = v->dirX;
+		v->dirX = v->dirX * cos(sign * f_time * 5) - v->dirY * sin(sign * f_time * 5);
+		v->dirY = tmp * sin(sign * f_time * 5) + v->dirY * cos(sign * f_time * 5);
+		tmp = v->planeX;
+		v->planeX = v->planeX * cos(sign * f_time * 5) - v->planeY * sin(sign * f_time * 5);
+		v->planeY = tmp * sin(sign * f_time * 5) + v->planeY * cos(sign * f_time * 5);
+	}
 	t = clock();
-	paint_world(view);
-	t = clock() - t;
-	f_time = ((double)t) / CLOCKS_PER_SEC;		
-}
-
-void init_images(t_view *view)
-{
-	static char* names[] = {"textures/bluestone.xpm", "textures/colorstone.xpm", "textures/purplestone.xpm", "textures/eagle.xpm",
-	"textures/mossy.xpm", "textures/redbrick.xpm", "textures/wood.xpm", "textures/greystone.xpm", "textures/barrel.xpm",
-	"textures/pillar.xpm", "textures/greenlight.xpm", "textures/devil/devil_0_0.xpm", "textures/devil/devil_0_1.xpm",
-	"textures/devil/devil_0_2.xpm", "textures/devil/devil_0_3.xpm", "textures/fight/fight_0_3.xpm", "textures/fight/fight_0_0.xpm",
-	"textures/fight/fight_0_1.xpm", "textures/fight/fight_0_2.xpm", "textures/fight/fight_1_0.xpm", "textures/fight/fight_1_1.xpm",
-	"textures/fight/fight_1_2.xpm"};
-
-	//check seg fault when I punch really fast
-	int c = 0;
-	int c2 = 0;
-
-	while (names[c] != '\0')
-		c++;
-	while (c2 < c -1 )
-	{
-		if (c2 > 14)
-		{
-			view->texWidth = 250;
-			view->texHeight = 150;
-		}
-		view->textures[c2].ptr = mlx_xpm_file_to_image(view->mlx_ptr, names[c2], &view->texWidth, &view->texHeight);
-		view->textures[c2].addr = mlx_get_data_addr(view->textures[c2].ptr, &(view->textures[c2].bpp),
-					&(view->textures[c2].s_line), &(view->textures[c2].endian));
-		c2++;
-	}
+	paint_world(v);
+	f_time = ((double)(clock() - t)) / CLOCKS_PER_SEC;		
 }
 
 int			main(int argc, char **argv)
