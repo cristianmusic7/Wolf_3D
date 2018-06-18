@@ -23,7 +23,8 @@ FRAMEWORKS = -framework OpenGL \
 
 FLAGS = -Wall -Werror -Wextra -g
 
-SRC = 	animations.c \
+SRC = 	raycast.c \
+		animations.c \
 		draw.c \
 		utils.c \
 		hooks.c \

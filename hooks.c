@@ -20,6 +20,7 @@
 int		exit_handler(t_view *view)
 {
 	mlx_destroy_window(view->mlx_ptr, view->win_ptr);
+	system("pkill afplay");
 	exit(0);
 	return (0);
 }

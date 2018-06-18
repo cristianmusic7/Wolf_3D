@@ -18,15 +18,15 @@
 
 void	enemy_attack(t_view *v, int c)
 {
-	if (ABS(v->sprites[c].x - v->posX) <= 1
-			&& ABS(v->sprites[c].y - v->posY) <= 2)
+	if (ABS(v->sprites[c].x - v->pos_x) <= 1
+			&& ABS(v->sprites[c].y - v->pos_y) <= 2)
 	{
 		v->sprites[c].texture = 16;
 		v->attack = 1;
-		if (v->health < 245)
-			v->health += 1;
+		if (v->damage < 245)
+			v->damage += 1;
 		else
-			init_view(v);
+			init_view(v, 1);
 	}
 	else
 	{
@@ -34,13 +34,13 @@ void	enemy_attack(t_view *v, int c)
 			v->sprites[c].texture = 11;
 		else
 			v->sprites[c].texture += 1;
-		if (v->sprites[c].x > v->posX)
+		if (v->sprites[c].x > v->pos_x)
 			v->sprites[c].x -= 0.1;
-		else if (v->sprites[c].x < v->posX)
+		else if (v->sprites[c].x < v->pos_x)
 			v->sprites[c].x += 0.1;
-		if (v->sprites[c].y > v->posY)
+		if (v->sprites[c].y > v->pos_y)
 			v->sprites[c].y -= 0.1;
-		else if (v->sprites[c].y < v->posY)
+		else if (v->sprites[c].y < v->pos_y)
 			v->sprites[c].y += 0.1;
 	}
 }
@@ -60,12 +60,17 @@ void	enemy_death(t_view *v, int c)
 		v->sprites[c].alive = 1;
 	}
 	else
+	{
+		if (v->sprites[c].texture == 17)
+			system("afplay -v 2 -t 3 sounds/death2.mp3 &");
 		v->sprites[c].texture += 1;
+	}
 }
 
 void	enemy_anim(t_view *v)
 {
-	int	c;
+	static int	playing = 0;
+	int			c;
 
 	c = 11;
 	v->attack = 0;
@@ -78,6 +83,17 @@ void	enemy_anim(t_view *v)
 			enemy_death(v, c);
 		c++;
 	}
+	if (v->attack)
+	{
+		system("afplay -v 2 sounds/attack.mp3 &");
+		playing = 1;
+	}
+	else if (playing)
+	{
+		system("ps aux | grep 'attack' | grep -v \"grep\" |\
+							awk \'{print $2}\' | xargs kill");
+		playing = 0;
+	}
 }
 
 void	kill_anim(t_view *v)
@@ -87,8 +103,8 @@ void	kill_anim(t_view *v)
 	c = 11;
 	while (c < v->num_sprites)
 	{
-		if (ABS(v->sprites[c].x - v->posX) <= 1
-				&& ABS(v->sprites[c].y - v->posY) <= 2)
+		if (ABS(v->sprites[c].x - v->pos_x) <= 1
+				&& ABS(v->sprites[c].y - v->pos_y) <= 2)
 		{
 			v->sprites[c].texture = 17;
 			v->sprites[c].alive = 0;
@@ -103,6 +119,7 @@ void	fight_anim(t_view *view)
 	{
 		if (view->fight_tex == 23)
 		{
+			system("afplay sounds/punch.mp3 &");
 			view->fight_tex = 21;
 			view->fight_anim = 0;
 			if (view->attack)

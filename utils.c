@@ -17,35 +17,29 @@
 
 void	load_textures(t_view *v)
 {
-	static	char *names[] = {"bluestone.xpm", "colorstone.xpm", "purplestone.xpm",
-	"eagle.xpm", "mossy.xpm", "redbrick.xpm", "wood.xpm", "greystone.xpm", "barrel.xpm",
-	"pillar.xpm", "greenlight.xpm", "devil/devil_0_0.xpm", "devil/devil_0_1.xpm",
-	"devil/devil_0_2.xpm", "devil/devil_0_3.xpm", "devil/devil_0_4.xpm", "devil/devil_1_0.xpm",
-	"devil/devil_2_1.xpm", "devil/devil_2_2.xpm", "devil/devil_2_3.xpm", "devil/devil_2_4.xpm",
-	"fight/fight_0_3.xpm", "fight/fight_0_0.xpm", "fight/fight_0_1.xpm", "fight/fight_0_2.xpm", 
+	int			c;
+	char		*name;
+	static char *names[] = {"bluestone.xpm", "colorstone.xpm",
+	"purplestone.xpm", "eagle.xpm", "mossy.xpm", "redbrick.xpm", "wood.xpm",
+	"greystone.xpm", "barrel.xpm", "pillar.xpm", "greenlight.xpm",
+	"devil/0_0.xpm", "devil/0_1.xpm", "devil/0_2.xpm", "devil/0_3.xpm",
+	"devil/0_4.xpm", "devil/1_0.xpm", "devil/2_1.xpm", "devil/2_2.xpm",
+	"devil/2_3.xpm", "devil/2_4.xpm", "fight/fight_0_3.xpm",
+	"fight/fight_0_0.xpm", "fight/fight_0_1.xpm", "fight/fight_0_2.xpm",
 	"fight/fight_1_0.xpm", "fight/fight_1_1.xpm", "fight/fight_1_2.xpm"};
-	int		c;
-	int		c2;
-	char	*name;
-	//check seg fault when I punch really fast
+
 	c = 0;
-	c2 = 0;
 	while (names[c] != '\0')
 		c++;
-	v->textures = (t_image *)malloc(sizeof(t_image) * c - 1);
-	while (c2 < c - 1)
+	v->textures = (t_image *)malloc(sizeof(t_image) * --c);
+	while ((--c >= 0) && (name = ft_strjoin("textures/", names[c])))
 	{
-		if (c2 > 20)
-		{
-			v->texWidth = 250;
-			v->texHeight = 150;
-		}
-		name = ft_strjoin("textures/", names[c2]);
-		v->textures[c2].ptr = mlx_xpm_file_to_image(v->mlx_ptr, name, &v->texWidth, &v->texHeight);
-		v->textures[c2].addr = mlx_get_data_addr(v->textures[c2].ptr, &(v->textures[c2].bpp),
-					&(v->textures[c2].s_line), &(v->textures[c2].endian));
+		v->textures[c].ptr = mlx_xpm_file_to_image(v->mlx_ptr,
+									name, &v->t_width, &v->t_height);
+		v->textures[c].addr = mlx_get_data_addr(v->textures[c].ptr,
+														&(v->textures[c].bpp),
+					&(v->textures[c].s_line), &(v->textures[c].endian));
 		free(name);
-		c2++;
 	}
 }
 
@@ -62,6 +56,7 @@ void	read_line(t_map *map, char *line, int c)
 	int		x;
 
 	x = 0;
+	map->width = 0;
 	input = ft_strsplit(line, ' ');
 	in_tmp = input;
 	while (input[x])
@@ -72,15 +67,13 @@ void	read_line(t_map *map, char *line, int c)
 		map->width = x;
 	map->values[c] = (int *)malloc(sizeof(int) * x);
 	x = 0;
-	while (*input)
+	while (input[x])
 	{
-		map->values[c][x] = ft_atoi(*input);
-		free(*input);
-		input++;
+		map->values[c][x] = ft_atoi(input[x]);
+		free(input[x]);
 		x++;
 	}
-	free(*input);
-	free(in_tmp);
+	free(input);
 	free(line);
 }
 
@@ -93,11 +86,13 @@ void	read_input(char *file, t_map *map)
 
 	l_count = 0;
 	map->height = 0;
-	map->width = 0;
 	if ((fd = open(file, O_RDONLY)) == -1)
 		print_error();
 	while ((res = get_next_line(fd, &line)) && res != -1)
+	{
 		(map->height)++;
+		free(line);
+	}
 	map->values = (int **)malloc(sizeof(int *) * map->height);
 	if (close(fd) == -1)
 		print_error();
@@ -105,11 +100,8 @@ void	read_input(char *file, t_map *map)
 		print_error();
 	while ((res = get_next_line(fd, &line)) && res != -1)
 		read_line(map, line, l_count++);
-	if (res == -1)
-		print_error();
 	free(line);
-	line = NULL;
-	if (close(fd) == -1)
+	if (res == -1 || close(fd) == -1)
 		print_error();
 }
 

@@ -31,12 +31,11 @@ int		draw_line(int x, int side, t_view *v)
 	{
 		d = y_start * 256 - v->s_height * 128 +
 							(int)(v->s_height / v->z_buffer[x]) * 128;
-		v->tex_y = ((d * v->texHeight) /
+		v->tex_y = ((d * v->t_height) /
 						(int)(v->s_height / v->z_buffer[x])) / 256;
 		if (side == 2 || side == 3)
-			fill_image(side, x, y_start, 1, v);
-		else
-			fill_image(side, x, y_start, 0, v);
+			v->alpha = 1;
+		fill_image(side, x, y_start, v);
 		y_start++;
 	}
 	return (0);
@@ -57,88 +56,69 @@ int		draw_floor(int x, double floor_x, double floor_y, t_view *v)
 	while (y < v->s_height)
 	{
 		weight = (v->s_height / (2.0 * y - v->s_height)) / v->z_buffer[x];
-		floor_x_tmp = weight * floor_x + (1.0 - weight) * v->posX;
-		floor_y_tmp = weight * floor_y + (1.0 - weight) * v->posY;
-		v->tex_x = (int)(floor_x_tmp * v->texWidth) % v->texWidth;
-		v->tex_y = (int)(floor_y_tmp * v->texHeight) % v->texHeight;
-		fill_image(4, x, y, 1, v);
-		fill_image(6, x, (v->s_height - y), 1, v);
+		floor_x_tmp = weight * floor_x + (1.0 - weight) * v->pos_x;
+		floor_y_tmp = weight * floor_y + (1.0 - weight) * v->pos_y;
+		v->tex_x = (int)(floor_x_tmp * v->t_width) % v->t_width;
+		v->tex_y = (int)(floor_y_tmp * v->t_height) % v->t_height;
+		v->alpha = 1;
+		fill_image(4, x, y, v);
+		v->alpha = 1;
+		fill_image(6, x, (v->s_height - y), v);
 		y++;
 	}
 	return (0);
 }
 
-void	render_sprites(t_view *v, double tr_y, t_list *s_list)
-{
-	int y;
-	int d;
-	int sprite_h;
-
-	sprite_h = ABS((int)(v->s_height / (tr_y)));
-	if ((v->drawStartX) > 0 < v->s_width && tr_y <
-							v->z_buffer[(v->drawStartX)])
-	{
-		y = v->drawStartY;
-		while (y < v->drawEndY)
-		{
-			d = (y++) * 256 - v->s_height * 128 + sprite_h * 128;
-			v->tex_y = ((d * v->texHeight) / sprite_h) / 256;
-			fill_image(v->sprites[((t_sprite *)s_list->content)->index].texture,
-								v->drawStartX, y - 1, 2, v);
-		}
-	}
-}
-
-void	draw_sprites2(t_view *v, int sprite_x, t_list *s_list, double tr_y)
+void	sprites_helper(t_view *v, int sprite_x, t_list *s_list, double tr_y)
 {
 	int sprite_h;
 	int sprite_w;
 
 	sprite_h = ABS((int)(v->s_height / (tr_y)));
 	sprite_w = ABS((int)(v->s_width / (tr_y)));
-	if ((v->drawStartY = -sprite_h / 2 + v->s_height / 2) < 0)
-		v->drawStartY = 0;
-	if ((v->drawEndY = sprite_h / 2 + v->s_height / 2) >= v->s_height)
-		v->drawEndY = v->s_height - 1;
-	if ((v->drawStartX = -sprite_w / 2 + sprite_x) < 0)
-		v->drawStartX = 0;
-	if ((v->drawEndX = sprite_w / 2 + sprite_x) >= v->s_width)
-		v->drawEndX = v->s_width - 1;
-	while (v->drawStartX < v->drawEndX)
+	if ((v->d_start_y = -sprite_h / 2 + v->s_height / 2) < 0)
+		v->d_start_y = 0;
+	if ((v->d_end_y = sprite_h / 2 + v->s_height / 2) >= v->s_height)
+		v->d_end_y = v->s_height - 1;
+	if ((v->d_start_x = -sprite_w / 2 + sprite_x) < 0)
+		v->d_start_x = 0;
+	if ((v->d_end_x = sprite_w / 2 + sprite_x) >= v->s_width)
+		v->d_end_x = v->s_width - 1;
+	while (v->d_start_x < v->d_end_x)
 	{
-		v->tex_x = (int)(256 * (v->drawStartX - (-sprite_w / 2 + sprite_x))
-												* v->texWidth / sprite_w) / 256;
+		v->tex_x = (int)(256 * (v->d_start_x - (-sprite_w / 2 + sprite_x))
+												* v->t_width / sprite_w) / 256;
 		render_sprites(v, tr_y, s_list);
-		v->drawStartX++;
+		v->d_start_x++;
 	}
 }
 
 void	draw_sprites(t_view *v, double inv_det)
 {
 	t_list	*s_list;
-	double	sx;
-	double	sy;
+	t_list	*tmp;
+	t_coord	trans;
 	int		c;
-	double	ty;
-	double	tx;
 
 	s_list = NULL;
 	c = 0;
 	while (c < v->num_sprites)
 	{
-		v->sprites[c].distance = ((v->posX - v->sprites[c].x) * (v->posX - v->sprites[c].x)
-									+ (v->posY - v->sprites[c].y) * (v->posY - v->sprites[c].y));
+		v->sprites[c].distance =
+			((v->pos_x - v->sprites[c].x) * (v->pos_x - v->sprites[c].x)
+				+ (v->pos_y - v->sprites[c].y) * (v->pos_y - v->sprites[c].y));
 		ft_lstpushback(&(s_list), &(v->sprites[c++]), sizeof(t_sprite));
 	}
 	s_list = ft_lstsort(s_list, compare);
 	while (s_list != NULL)
 	{
-		sx = v->sprites[((t_sprite *)s_list->content)->index].x - v->posX;
-		sy = v->sprites[((t_sprite *)s_list->content)->index].y - v->posY;
-		tx = inv_det * (v->dirY * sx - v->dirX * sy);
-		if ((ty = inv_det * (-v->planeY * sx + v->planeX * sy)) > 0)
-			draw_sprites2(v, (int)((v->s_width / 2) * (1 + tx / ty)), s_list, ty);
-		s_list = s_list->next;
+		trans = get_transform(v, inv_det, s_list);
+		if ((tmp = s_list) && trans.y > 0)
+			sprites_helper(v, (int)((v->s_width / 2) * (1 + trans.x / trans.y)),
+				s_list, trans.y);
+		free(s_list->content);
+		free(s_list);
+		s_list = tmp->next;
 	}
 }
 
@@ -147,24 +127,25 @@ int		draw_fight(t_view *v, int sprite_x, int sprite_w, int sprite_h)
 	int	stripe;
 	int	y;
 
-	if ((v->drawStartY = v->s_height - sprite_h) < 0)
-		v->drawStartY = 0;
-	if ((v->drawEndY = v->s_height) >= v->s_height)
-		v->drawEndY = v->s_height - 1;
+	if ((v->d_start_y = v->s_height - sprite_h) < 0)
+		v->d_start_y = 0;
+	if ((v->d_end_y = v->s_height) >= v->s_height)
+		v->d_end_y = v->s_height - 1;
 	if ((stripe = -sprite_w / 2 + sprite_x) < 0)
 		stripe = 0;
-	if ((v->drawEndX = sprite_w / 2 + sprite_x) >= v->s_width)
-		v->drawEndX = v->s_width - 1;
-	while (stripe < v->drawEndX)
+	if ((v->d_end_x = sprite_w / 2 + sprite_x) >= v->s_width)
+		v->d_end_x = v->s_width - 1;
+	while (stripe < v->d_end_x)
 	{
 		v->tex_x = (int)(256 * (stripe++ - (-sprite_w / 2 + sprite_x))
 									* 250 / sprite_w) / 256;
-		y = v->drawStartY;
-		while (y < v->drawEndY)
+		y = v->d_start_y;
+		while (y < v->d_end_y)
 		{
 			v->tex_y = (int)(256 * (y++ - (v->s_height - sprite_h))
 									* 150 / sprite_h) / 256;
-			fill_image(v->fight_tex, stripe, y - 1, 2, v);
+			v->alpha = 2;
+			fill_image(v->fight_tex, stripe, y - 1, v);
 		}
 	}
 	return (0);
