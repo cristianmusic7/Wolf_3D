@@ -62,7 +62,7 @@ void	enemy_death(t_view *v, int c)
 	else
 	{
 		if (v->sprites[c].texture == 17)
-			system("afplay -v 2 -t 3 sounds/death2.mp3 &");
+			system("afplay -v 2 sounds/death2.mp3 &");
 		v->sprites[c].texture += 1;
 	}
 }
@@ -85,7 +85,7 @@ void	enemy_anim(t_view *v)
 	}
 	if (v->attack)
 	{
-		system("afplay -v 2 sounds/attack.mp3 &");
+		system("afplay -v 1 sounds/attack.mp3 &");
 		playing = 1;
 	}
 	else if (playing)

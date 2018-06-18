@@ -59,31 +59,6 @@ int		paint_world(t_view *v)
 	return (0);
 }
 
-void	move_keys(t_view *v, int key, double f_time)
-{
-	double			tmp;
-
-	f_time *= -1 + 2 * (key == 126 || key == 123);
-	if (key == 125 || key == 126)
-	{
-		if (v->map.values[(int)(v->pos_x + v->dir_x * f_time * 15)]
-												[(int)(v->pos_y)] == 0)
-			v->pos_x += v->dir_x * f_time * 15;
-		if (v->map.values[(int)(v->pos_x)]
-						[(int)(v->pos_y + v->dir_y * f_time * 15)] == 0)
-			v->pos_y += v->dir_y * f_time * 15;
-	}
-	if (key == 124 || key == 123)
-	{
-		tmp = v->dir_x;
-		v->dir_x = v->dir_x * cos(f_time * 5) - v->dir_y * sin(f_time * 5);
-		v->dir_y = tmp * sin(f_time * 5) + v->dir_y * cos(f_time * 5);
-		tmp = v->plane_x;
-		v->plane_x = v->plane_x * cos(f_time * 5) - v->plane_y * sin(f_time * 5);
-		v->plane_y = tmp * sin(f_time * 5) + v->plane_y * cos(f_time * 5);
-	}
-}
-
 void	init_sprites(t_view *v)
 {
 	int c;
@@ -114,7 +89,7 @@ void	init_sprites(t_view *v)
 }
 
 void	init_view(t_view *v, int sound)
-{	
+{
 	v->pos_x = 22;
 	v->pos_y = 12;
 	v->dir_x = -1;
@@ -128,6 +103,7 @@ void	init_view(t_view *v, int sound)
 	v->attack = 0;
 	v->damage = 0;
 	v->alpha = 0;
+	v->hitting = 0;
 	if (sound)
 		system("afplay -v 5 sounds/laugh.mp3 &");
 	system("afplay -v 2 sounds/background.mp3 &");
@@ -138,14 +114,14 @@ int		main(int argc, char **argv)
 	t_view view;
 
 	if (argc != 2)
-		ft_putendl("usage: ./wolf map_file_name");
+		ft_putendl("usage: ./wolf map_file_path");
 	else
 	{
 		read_input(argv[1], &(view.map));
 		init_sprites(&view);
 		view.mlx_ptr = mlx_init();
 		view.s_width = 1000;
-		view.s_height = 1000;
+		view.s_height = 500;
 		view.win_ptr = mlx_new_window(view.mlx_ptr, view.s_width,
 							view.s_height, "Wolf 3d - cfranco");
 		view.img.ptr = mlx_new_image(view.mlx_ptr, view.s_width, view.s_height);
@@ -157,7 +133,7 @@ int		main(int argc, char **argv)
 		mlx_hook(view.win_ptr, 4, 0, mouse_handler, &view);
 		mlx_hook(view.win_ptr, 17, 0, exit_handler, &view);
 		mlx_loop_hook(view.mlx_ptr, loop_handler, &view);
-		mlx_loop(view.mlx_ptr);		
+		mlx_loop(view.mlx_ptr);
 	}
 	return (0);
 }

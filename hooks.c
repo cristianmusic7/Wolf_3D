@@ -46,11 +46,6 @@ int		mouse_handler(int button, int x, int y, t_view *view)
 {
 	if (button == 1)
 		view->fight_anim = 1;
-	else if (button == 2)
-	{
-		view->fight_anim = 2;
-		view->fight_tex = 17;
-	}
 	x = 0;
 	y = 0;
 	return (0);

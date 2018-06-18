@@ -10,7 +10,7 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME = wolf
+NAME = wolf3d
 
 INC = -I minilibx_macos \
 	  -I libft
@@ -28,6 +28,7 @@ SRC = 	raycast.c \
 		draw.c \
 		utils.c \
 		hooks.c \
+		keys.c \
 		wolf.c
 
 OBJS = ft_*.o

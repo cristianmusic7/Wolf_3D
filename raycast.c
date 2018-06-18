@@ -18,25 +18,26 @@
 
 int		dda(double rx, double ry, t_view *v)
 {
-	double	sx;
-	double	sy;
+	t_coord screen;
 	int		side;
 
 	v->map_x = (int)v->pos_x;
 	v->map_y = (int)v->pos_y;
-	sx = ((-1 + 2 * (rx < 0)) * (v->pos_x - v->map_x) + !(rx < 0)) * ABS(1 / rx);
-	sy = ((-1 + 2 * (ry < 0)) * (v->pos_y - v->map_y) + !(ry < 0)) * ABS(1 / ry);
+	screen.x = ((-1 + 2 * (rx < 0)) * (v->pos_x - v->map_x) +
+										!(rx < 0)) * ABS(1 / rx);
+	screen.y = ((-1 + 2 * (ry < 0)) * (v->pos_y - v->map_y) +
+										!(ry < 0)) * ABS(1 / ry);
 	while (!v->map.values[v->map_x][v->map_y])
 	{
-		if (sx < sy)
+		if (screen.x < screen.y)
 		{
-			sx += ABS(1 / rx);
+			screen.x += ABS(1 / rx);
 			v->map_x += -1 + 2 * !(rx < 0);
 			side = !(rx > 0);
 		}
 		else
 		{
-			sy += ABS(1 / ry);
+			screen.y += ABS(1 / ry);
 			v->map_y += (-1 + 2 * !(ry < 0));
 			side = !(ry > 0) + 2;
 		}
