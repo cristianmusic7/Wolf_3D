@@ -39,4 +39,3 @@ void	move_keys(t_view *v, int key, double time)
 		v->plane_y = tmp * sin(time * 5) + v->plane_y * cos(time * 5);
 	}
 }
-

@@ -30,8 +30,8 @@ typedef struct	s_image
 typedef struct	s_map
 {
 	int			**values;
-	int			width;
-	int			height;
+	int			w;
+	int			h;
 	int			max_z;
 }				t_map;
 
@@ -80,7 +80,6 @@ typedef struct	s_view
 	int			damage;
 	int			sound;
 	int			alpha;
-	int			hitting;
 	int			num_sprites;
 	t_sprite	*sprites;
 	int			fight_tex;
@@ -90,7 +89,7 @@ typedef struct	s_view
 }				t_view;
 
 int				paint_world(t_view *view);
-void			print_error();
+void			print_error(int error_p);
 void			move_keys(t_view *v, int key, double time);
 int				key_handler(int key, t_view *view);
 int				mouse_handler(int button, int x, int y, t_view *view);
@@ -113,6 +112,5 @@ int				fill_image(int index, int x, int y, t_view *view);
 int				compare(void *content, void *next_content);
 void			read_line(t_map *map, char *line, int c);
 void			read_input(char *file, t_map *map);
-void			print_error();
 
 #endif

@@ -43,36 +43,42 @@ void	load_textures(t_view *v)
 	}
 }
 
-void	print_error(void)
+void	print_error(int error_p)
 {
-	perror("Error");
+	if (error_p == 1)
+		perror("Error");
+	else if (error_p == 0)
+		ft_putendl("Error: Bad formatted file");
+	else if (error_p == 2)
+		ft_putendl("usage: ./wolf map_file_path [width] [height] \
+		\n- width and height greater than 200\n- aspect ratio less than 3.0");
 	exit(0);
 }
 
 void	read_line(t_map *map, char *line, int c)
 {
 	char	**input;
-	char	**in_tmp;
 	int		x;
+	int		c2;
 
 	x = 0;
 	input = ft_strsplit(line, ' ');
-	in_tmp = input;
 	while (input[x])
-		x++;
-	if (map->width && map->width != x)
-	{
-		ft_putendl("Bad formatted file");
-		exit(0);
-	}
-	map->width = x;
+		map->w = x++;
+	if ((++map->w && map->w != x))
+		print_error(0);
 	map->values[c] = (int *)malloc(sizeof(int) * x);
 	x = 0;
 	while (input[x])
 	{
-		map->values[c][x] = ft_atoi(input[x]);
-		free(input[x]);
-		x++;
+		c2 = -1;
+		while (input[x][++c2])
+			if (!(input[x][c2] >= '0' && input[x][c2] <= '9'))
+				print_error(0);
+		if (!(map->values[c][x] = ft_atoi(input[x])) &&
+				(!x || !c || x == map->w - 1 || c == map->h - 1))
+			print_error(0);
+		free(input[x++]);
 	}
 	free(input);
 	free(line);
@@ -86,25 +92,25 @@ void	read_input(char *file, t_map *map)
 	int		l_count;
 
 	l_count = 0;
-	map->width = 0;
-	map->height = 0;
+	map->w = 0;
+	map->h = 0;
 	if ((fd = open(file, O_RDONLY)) == -1)
-		print_error();
+		print_error(1);
 	while ((res = get_next_line(fd, &line)) && res != -1)
 	{
-		(map->height)++;
+		(map->h)++;
 		free(line);
 	}
-	map->values = (int **)malloc(sizeof(int *) * map->height);
-	if (close(fd) == -1)
-		print_error();
-	if ((fd = open(file, O_RDONLY)) == -1)
-		print_error();
+	map->values = (int **)malloc(sizeof(int *) * map->h);
+	if (close(fd) == -1 || (fd = open(file, O_RDONLY)) == -1)
+		print_error(1);
 	while ((res = get_next_line(fd, &line)) && res != -1)
 		read_line(map, line, l_count++);
-	free(line);
 	if (res == -1 || close(fd) == -1)
-		print_error();
+		print_error(1);
+	if (!map->w || !map->h)
+		print_error(0);
+	free(line);
 }
 
 int		compare(void *content, void *next_content)

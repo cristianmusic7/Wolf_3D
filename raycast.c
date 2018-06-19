@@ -21,8 +21,6 @@ int		dda(double rx, double ry, t_view *v)
 	t_coord screen;
 	int		side;
 
-	v->map_x = (int)v->pos_x;
-	v->map_y = (int)v->pos_y;
 	screen.x = ((-1 + 2 * (rx < 0)) * (v->pos_x - v->map_x) +
 										!(rx < 0)) * ABS(1 / rx);
 	screen.y = ((-1 + 2 * (ry < 0)) * (v->pos_y - v->map_y) +
@@ -33,12 +31,14 @@ int		dda(double rx, double ry, t_view *v)
 		{
 			screen.x += ABS(1 / rx);
 			v->map_x += -1 + 2 * !(rx < 0);
+			v->map_x = (v->map_x >= v->map.w) ? v->map.w - 1 : v->map_x;
 			side = !(rx > 0);
 		}
 		else
 		{
 			screen.y += ABS(1 / ry);
 			v->map_y += (-1 + 2 * !(ry < 0));
+			v->map_y = (v->map_y >= v->map.h) ? v->map.h - 1 : v->map_y;
 			side = !(ry > 0) + 2;
 		}
 	}
@@ -48,10 +48,11 @@ int		dda(double rx, double ry, t_view *v)
 void	main_cast(t_view *v, int x, double rx, double ry)
 {
 	double	wall_x;
-	double	floor_x;
-	double	floor_y;
+	t_coord	floor_w;
 	int		side;
 
+	v->map_x = (int)(v->pos_x);
+	v->map_y = (int)(v->pos_y);
 	side = dda(rx, ry, v);
 	if (side == 0 || side == 1)
 		v->z_buffer[x] = (v->map_x - v->pos_x + (1 - !(rx < 0))) / rx;
@@ -65,12 +66,12 @@ void	main_cast(t_view *v, int x, double rx, double ry)
 	v->tex_x = (int)(wall_x * (double)(v->t_width));
 	if ((side == 0 && rx > 0) || (side == 3 && ry < 0))
 		v->tex_x = v->t_width - v->tex_x - 1;
-	floor_x = v->map_x + wall_x * !(side == 0 || side == 1)
+	floor_w.x = v->map_x + wall_x * !(side == 0 || side == 1)
 							+ (rx < 0) * (side == 0 || side == 1);
-	floor_y = v->map_y + (ry < 0) * !(side == 0 || side == 1)
+	floor_w.y = v->map_y + (ry < 0) * !(side == 0 || side == 1)
 							+ wall_x * (side == 0 || side == 1);
 	draw_line(x, side, v);
-	draw_floor(x, floor_x, floor_y, v);
+	draw_floor(x, floor_w.x, floor_w.y, v);
 }
 
 void	render_sprites(t_view *v, double tr_y, t_list *s_list)

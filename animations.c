@@ -53,8 +53,8 @@ void	enemy_death(t_view *v, int c)
 		v->sprites[c].y = 0;
 		while (v->map.values[(int)v->sprites[c].x][(int)v->sprites[c].y] != 0)
 		{
-			v->sprites[c].x = (float)rand() / (RAND_MAX) * v->map.width;
-			v->sprites[c].y = (float)rand() / (RAND_MAX) * v->map.height;
+			v->sprites[c].x = (float)rand() / (RAND_MAX) * v->map.w;
+			v->sprites[c].y = (float)rand() / (RAND_MAX) * v->map.h;
 		}
 		v->sprites[c].texture = 11;
 		v->sprites[c].alive = 1;
